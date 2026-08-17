@@ -73,12 +73,16 @@
     gap: 24px;
   }
 
+  .field-title { display: flex; flex-direction: column; }
   .field-title label {
     display: block;
     font-size: 14px;
     font-weight: 500;
     margin-bottom: 8px;
   }
+
+  .organizer-row { display: flex; gap: 10px; }
+  .organizer-row .input-sm { flex: 1; height: 40px; }
   .input-title {
     width: 100%;
     height: 48px;
@@ -412,7 +416,7 @@
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     gap: 12px;
     padding: 16px 40px;
     background: #fff;
@@ -567,6 +571,19 @@
   <!-- Scrollable form -->
   <div class="scroll-area">
     <div class="form">
+
+      <!-- Organizer details: this flow runs for signed-out visitors, so we
+           need a name and email before anything can be created - it's how
+           guests know who's asking, and how the organizer gets back in to
+           manage what they made. -->
+      <div class="field-title" style="gap:10px;">
+        <label>Your details</label>
+        <div class="organizer-row">
+          <input id="organizer-name" class="input-sm" type="text" placeholder="Your name" required autocomplete="name">
+          <input id="organizer-email" class="input-sm" type="email" placeholder="Your email" required autocomplete="email">
+        </div>
+        <p class="helper-text">We'll use this to let guests know who's asking, and to send you the link to manage this.</p>
+      </div>
 
       <!-- Event name + live status read-out -->
       <div class="field-title">
@@ -1031,7 +1048,7 @@
   <!-- Sticky footer -->
   <footer class="footer">
     <button type="button" class="btn-secondary">Cancel</button>
-    <button type="button" class="btn-primary" id="create-btn">Create</button>
+    <button type="button" class="btn-primary" id="create-btn">Sign up and share</button>
   </footer>
 
   <!-- Shared popovers for the custom time row's time-of-day and date pickers -->
@@ -1099,7 +1116,6 @@
     const pollTypeLabel = document.getElementById('poll-type-label');
     const timesSection = document.getElementById('times-section');
     const bookingSection = document.getElementById('booking-availability-section');
-    const createBtn = document.getElementById('create-btn');
     const advGroups = {
       '1on1': document.getElementById('advanced-1on1'),
       'group-poll': document.getElementById('advanced-group-poll'),
@@ -1266,7 +1282,9 @@
         if (el) el.style.display = key === type ? 'flex' : 'none';
       });
 
-      createBtn.textContent = (type === 'group-poll' || type === '1on1') ? 'Create' : 'Publish';
+      // The button always reads "Sign up and share" - this flow runs for
+      // signed-out visitors, so every outcome both creates their account
+      // (via the email above) and produces something to share.
     }
 
     intentCards.forEach((card) => {
