@@ -6,9 +6,17 @@
 <title>Doodle: New event</title>
 <style>
   :root {
-    --primary: #2B8FE0;
-    --primary-dark: #1c6fb8;
-    --primary-tint: #eaf1fb;
+    /* Doodle brand accent, pulled from the marketing site's own tokens.
+       --primary/--primary-dark/--primary-tint point here so every accent
+       in the flow (focus rings, switches, selected states, buttons) uses
+       the real brand purple instead of the placeholder blue. */
+    --basada-dark: #9a40b5;
+    --basada-darker: #7d3494;
+    --basada-light: #e7a0ff;
+    --basada-lightest: #fcf2ff;
+    --primary: var(--basada-dark);
+    --primary-dark: var(--basada-darker);
+    --primary-tint: var(--basada-lightest);
     --text: #121212;
     --text-muted: #9a9a9a;
     --text-soft: #5b5b5b;
@@ -81,8 +89,6 @@
     margin-bottom: 8px;
   }
 
-  .organizer-row { display: flex; gap: 10px; }
-  .organizer-row .input-sm { flex: 1; height: 40px; }
   .input-title {
     width: 100%;
     height: 48px;
@@ -96,7 +102,7 @@
     transition: border-color .15s, box-shadow .15s;
   }
   .input-title::placeholder { color: var(--text-muted); font-weight: 400; }
-  .input-title:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(43,143,224,0.15); }
+  .input-title:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(154,64,181,0.15); }
 
   .field-row {
     display: flex;
@@ -147,7 +153,7 @@
   }
   .input-sm.with-icon { padding-left: 34px; }
   .input-sm::placeholder { color: var(--text-muted); }
-  .input-sm:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(43,143,224,0.15); }
+  .input-sm:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(154,64,181,0.15); }
 
   .guest-list { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
   .guest-row { display: flex; align-items: center; gap: 12px; padding: 6px 0; }
@@ -292,9 +298,10 @@
 
   .time-popover {
     display: none; position: fixed; z-index: 30; min-width: 100px; max-height: 220px;
-    overflow-y: auto; background: #fff; border: 1px solid var(--border); border-radius: 10px;
+    overflow-y: auto; scrollbar-width: none; background: #fff; border: 1px solid var(--border); border-radius: 10px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.15); padding: 4px;
   }
+  .time-popover::-webkit-scrollbar { display: none; }
   .time-popover.open { display: block; }
   .time-popover-item { display: block; width: 100%; text-align: left; padding: 6px 10px; border-radius: 6px; font-size: 13px; }
   .time-popover-item:hover { background: var(--hover); }
@@ -325,7 +332,8 @@
 
   .grid-hint { font-size: 12px; color: var(--text-muted); margin: 0 0 10px; }
   .grid-wrap { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-  .grid-scroll { overflow-x: auto; }
+  .grid-scroll { overflow-x: auto; scrollbar-width: none; }
+  .grid-scroll::-webkit-scrollbar { display: none; }
   .grid-table { display: grid; }
   .grid-head-cell {
     padding: 8px 2px; font-size: 11px; font-weight: 600; text-align: center;
@@ -415,12 +423,18 @@
   footer.footer {
     flex-shrink: 0;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
     padding: 16px 40px;
     background: #fff;
     border-top: 1px solid var(--border-soft);
+  }
+  .footer-inner {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
   }
   .btn-secondary {
     height: 36px; padding: 0 18px; border-radius: 999px;
@@ -440,7 +454,6 @@
     .banner, .divider { margin-left: 0; }
     .field-row { gap: 12px; }
     .calendar-row { flex-direction: column; }
-    .intent-row { flex-direction: column; }
   }
 
   /* Status pill: a live, always-visible read-out of what this will become.
@@ -460,26 +473,6 @@
   }
   .status-pill.resolved { background: var(--primary-tint); color: var(--primary-dark); }
 
-  /* Fork 1: intent cards ("find one time for everyone" vs "share your availability") */
-  .intent-row { display: flex; gap: 10px; }
-  .intent-card {
-    flex: 1;
-    text-align: left;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 14px 16px;
-    border-radius: 14px;
-    border: 1.5px solid var(--border);
-    background: transparent;
-    transition: border-color .15s, background-color .15s;
-  }
-  .intent-card:hover { border-color: var(--text-muted); }
-  .intent-card.selected { border-color: var(--primary); background: var(--primary-tint); }
-  .intent-card-title { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
-  .intent-card-title svg { color: var(--primary); flex-shrink: 0; }
-  .intent-card-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.4; }
-
   /* Sections that only make sense once an intent is picked */
   #post-intent-sections { display: flex; flex-direction: column; gap: 24px; }
   .prompt-text { font-size: 13px; color: var(--text-muted); font-style: italic; }
@@ -487,6 +480,7 @@
   /* Fork 2: mechanism toggle (specific times vs. open/rolling availability) */
   .mechanism-row {
     display: inline-flex;
+    align-self: flex-start;
     gap: 4px;
     padding: 4px;
     background: #f2f2f2;
@@ -572,19 +566,6 @@
   <div class="scroll-area">
     <div class="form">
 
-      <!-- Organizer details: this flow runs for signed-out visitors, so we
-           need a name and email before anything can be created - it's how
-           guests know who's asking, and how the organizer gets back in to
-           manage what they made. -->
-      <div class="field-title" style="gap:10px;">
-        <label>Your details</label>
-        <div class="organizer-row">
-          <input id="organizer-name" class="input-sm" type="text" placeholder="Your name" required autocomplete="name">
-          <input id="organizer-email" class="input-sm" type="email" placeholder="Your email" required autocomplete="email">
-        </div>
-        <p class="helper-text">We'll use this to let guests know who's asking, and to send you the link to manage this.</p>
-      </div>
-
       <!-- Event name + live status read-out -->
       <div class="field-title">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px;">
@@ -592,32 +573,27 @@
           <span class="status-pill" id="status-pill">Choose an option below</span>
         </div>
         <input id="event-name" class="input-title" type="text" value="" placeholder="Add title (optional)">
+
+        <!-- This flow runs for signed-out visitors, so we need an email
+             before anything can be created - it's how the organizer gets
+             back in to manage what they made. -->
+        <input id="organizer-email" class="input-sm" type="email" placeholder="Your email" required autocomplete="email" style="margin-top:8px; max-width:320px;">
       </div>
 
-      <!-- Fork 1: the one question we actually ask up front, in plain language.
-           This alone determines Group Poll vs. everything else - no jargon. -->
-      <div class="field-title" style="gap:10px;">
-        <label>What do you need?</label>
-        <div class="intent-row" role="radiogroup" aria-label="What do you need?">
-          <button type="button" class="intent-card" id="intent-converge" data-intent="converge" role="radio" aria-checked="false">
-            <span class="intent-card-title">
-              <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-              Find one time for everyone
-            </span>
-            <span class="intent-card-desc">Guests respond until you land on a single time together.</span>
-          </button>
-          <button type="button" class="intent-card" id="intent-claim" data-intent="claim" role="radio" aria-checked="false">
-            <span class="intent-card-title">
-              <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect height="18" rx="2" width="18" x="3" y="4"></rect><path d="M3 10h18"></path><path d="m9 16 2 2 4-4"></path></svg>
-              Share your availability
-            </span>
-            <span class="intent-card-desc">Offer times or open hours; guests each grab what works for them.</span>
-          </button>
+      <!-- Fork 1: solo users default straight into Group Poll (the majority
+           case - "find one time that works for everyone"), so this is a
+           low-emphasis segmented toggle rather than an upfront decision
+           gate. Selecting the second segment reveals Fork 2 below. -->
+      <div class="field-title" style="gap:8px;">
+        <div class="mechanism-row" id="intent-toggle" role="radiogroup" aria-label="What do you need?">
+          <button type="button" class="mechanism-btn" id="intent-converge" data-intent="converge" role="radio" aria-checked="true">Find a time for a group</button>
+          <button type="button" class="mechanism-btn" id="intent-claim" data-intent="claim" role="radio" aria-checked="false">Let people book time with you</button>
         </div>
       </div>
 
-      <!-- Everything below only makes sense once Fork 1 is answered -->
-      <div id="post-intent-sections" style="display:none;">
+      <!-- Group Poll is the default resting state, so nothing here is
+           gated behind Fork 1 anymore. -->
+      <div id="post-intent-sections">
 
       <!-- Participants: universal in every branch. Not knowing who's coming
            yet is legitimate for a poll, a sign-up sheet, or a booking page -
@@ -1047,8 +1023,10 @@
 
   <!-- Sticky footer -->
   <footer class="footer">
-    <button type="button" class="btn-secondary">Cancel</button>
-    <button type="button" class="btn-primary" id="create-btn">Sign up and share</button>
+    <div class="footer-inner">
+      <button type="button" class="btn-secondary" id="preview-btn">Preview</button>
+      <button type="button" class="btn-primary" id="create-btn">Sign up and share</button>
+    </div>
   </footer>
 
   <!-- Shared popovers for the custom time row's time-of-day and date pickers -->
@@ -1097,10 +1075,9 @@
     // pill so the inference is never silent.
     const eventNameInput = document.getElementById('event-name');
     const statusPill = document.getElementById('status-pill');
-    const postIntentSections = document.getElementById('post-intent-sections');
-    const intentCards = document.querySelectorAll('.intent-card');
+    const intentToggleButtons = document.querySelectorAll('#intent-toggle .mechanism-btn');
     const mechanismSection = document.getElementById('mechanism-section');
-    const mechanismButtons = document.querySelectorAll('.mechanism-btn');
+    const mechanismButtons = document.querySelectorAll('#mechanism-section .mechanism-btn');
     const capacityRow = document.getElementById('capacity-row');
     const capacityInput = document.getElementById('capacity-input');
     const capacityAutoTag = document.getElementById('capacity-auto-tag');
@@ -1132,7 +1109,10 @@
       'booking-page': { title: 'Booking page', text: 'Anyone with the link can book an open slot from the availability below.' },
     };
 
-    const state = { intent: null, mechanism: null, manualExpanded: false, capacityAuto: true, linkEnabled: true };
+    // Solo users default straight into Group Poll - the majority case - so
+    // intent starts resolved rather than null. (Team/enterprise defaulting
+    // is a separate, later decision and isn't handled here.)
+    const state = { intent: 'converge', mechanism: null, manualExpanded: false, capacityAuto: true, linkEnabled: true };
     let lastAutoTitle = '';
 
     function requiredGuestCount() {
@@ -1179,10 +1159,9 @@
       const type = resolvedType();
 
       // Status pill - always visible, always a plain readout, never a gate.
-      if (!state.intent) {
-        statusPill.textContent = 'Choose an option below';
-        statusPill.classList.remove('resolved');
-      } else if (state.intent === 'claim' && !state.mechanism) {
+      // (state.intent is always resolved now - Group Poll is the default -
+      // so there's no "choose an option below" state to show here.)
+      if (state.intent === 'claim' && !state.mechanism) {
         statusPill.textContent = 'Share availability: pick a format below';
         statusPill.classList.remove('resolved');
       } else {
@@ -1203,10 +1182,10 @@
         lastAutoTitle = '';
       }
 
-      intentCards.forEach((card) => {
-        const on = card.dataset.intent === state.intent;
-        card.classList.toggle('selected', on);
-        card.setAttribute('aria-checked', String(on));
+      intentToggleButtons.forEach((btn) => {
+        const on = btn.dataset.intent === state.intent;
+        btn.classList.toggle('active', on);
+        btn.setAttribute('aria-checked', String(on));
       });
 
       participantsLabel.textContent = type === '1on1' ? 'Guest' : 'Participants';
@@ -1218,9 +1197,6 @@
       linkAccessCopy.textContent = state.linkEnabled
         ? (hasAnyGuests ? 'Anyone with the link can also join' : 'Anyone with the link can join')
         : (hasAnyGuests ? 'Only your invited guests can join, link sharing is off' : 'Link sharing is off, add specific guests below or turn it back on');
-
-      postIntentSections.style.display = state.intent ? 'flex' : 'none';
-      if (!state.intent) return;
 
       mechanismSection.style.display = state.intent === 'claim' ? 'flex' : 'none';
       mechanismButtons.forEach((btn) => {
@@ -1287,9 +1263,13 @@
       // (via the email above) and produces something to share.
     }
 
-    intentCards.forEach((card) => {
-      card.addEventListener('click', () => {
-        state.intent = state.intent === card.dataset.intent ? null : card.dataset.intent;
+    intentToggleButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        // A segmented control, not a toggle-off radio: one segment is
+        // always selected (Group Poll by default), so re-clicking the
+        // active segment is a no-op rather than clearing the intent.
+        if (state.intent === btn.dataset.intent) return;
+        state.intent = btn.dataset.intent;
         state.mechanism = null;
         render();
       });
