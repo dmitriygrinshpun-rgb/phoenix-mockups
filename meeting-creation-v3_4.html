@@ -1,0 +1,1813 @@
+<!DOCTYPE html>
+<!-- saved from url=(0014)about:internet -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doodle: New event</title>
+<style>
+  :root {
+    --primary: #2B8FE0;
+    --primary-dark: #1c6fb8;
+    --primary-tint: #eaf1fb;
+    --text: #121212;
+    --text-muted: #9a9a9a;
+    --text-soft: #5b5b5b;
+    --border: rgba(0,0,0,0.1);
+    --border-soft: rgba(0,0,0,0.07);
+    --hover: #f2f2f2;
+    --hover-soft: #f9f9f9;
+    --green: #059669;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text);
+    background: #fafafa;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  svg { display: block; }
+  button { font: inherit; color: inherit; cursor: pointer; background: none; border: none; }
+  input { font: inherit; color: inherit; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 999px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  /* Top bar */
+  .topbar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 40px;
+    background: #fff;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .topbar-title { font-size: 14px; font-weight: 600; }
+  .topbar-spacer { width: 84px; }
+  .btn-close {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 12px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-soft);
+    transition: background-color .15s, color .15s;
+  }
+  .btn-close:hover { background: var(--hover); color: var(--text); }
+  .icon { width: 16px; height: 16px; flex-shrink: 0; }
+
+  /* Scroll area */
+  .scroll-area { flex: 1; overflow-y: auto; }
+  .form {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 40px 140px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .field-title label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .input-title {
+    width: 100%;
+    height: 48px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: transparent;
+    padding: 0 14px;
+    font-size: 22px;
+    font-weight: 600;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .input-title::placeholder { color: var(--text-muted); font-weight: 400; }
+  .input-title:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(43,143,224,0.15); }
+
+  .field-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  .field-row.center { align-items: center; }
+  .field-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    height: 20px;
+    color: var(--text-muted);
+  }
+  .field-row.tall .field-icon { height: 32px; }
+  .field-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .field-body label {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .search-wrap { position: relative; }
+  .search-wrap .icon-sm {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    color: var(--text-muted);
+  }
+  .input-sm {
+    width: 100%;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    padding: 0 12px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .input-sm.with-icon { padding-left: 34px; }
+  .input-sm::placeholder { color: var(--text-muted); }
+  .input-sm:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(43,143,224,0.15); }
+
+  .guest-list { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+  .guest-row { display: flex; align-items: center; gap: 12px; padding: 6px 0; }
+  .guest-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; opacity: 0; transition: opacity .15s; margin-left: auto; }
+  .guest-row:hover .guest-actions { opacity: 1; }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 999px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #fff;
+  }
+  .guest-info { flex: 1; min-width: 0; }
+  .guest-name { font-size: 14px; font-weight: 500; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .guest-role { font-size: 12px; color: var(--text-muted); margin: 0; }
+  .icon-btn {
+    width: 28px; height: 28px; border-radius: 999px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted); transition: background-color .15s;
+  }
+  .icon-btn:hover { background: var(--hover); }
+  .icon-xs { width: 14px; height: 14px; }
+
+  .banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    border-radius: 12px;
+    background: var(--primary-tint);
+    padding: 12px 16px;
+    margin-left: 40px;
+  }
+  .banner .icon { color: #2563c9; margin-top: 2px; }
+  .banner-title { font-size: 14px; font-weight: 500; color: #1c4d8c; margin: 0; line-height: 1.4; }
+  .banner-text { font-size: 14px; color: #5a6b85; margin: 2px 0 0; line-height: 1.4; }
+  .banner-close { color: #2563c9; margin-left: auto; flex-shrink: 0; transition: opacity .15s; }
+  .banner-close:hover { opacity: .7; }
+
+  .divider { height: 1px; background: var(--border-soft); margin-left: 40px; }
+
+  .select-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    padding: 0 8px 0 10px;
+    font-size: 14px;
+    background: transparent;
+    transition: background-color .15s;
+    white-space: nowrap;
+  }
+  .select-btn:hover { background: var(--hover-soft); }
+  .select-btn .chev { margin-left: auto; color: var(--text-muted); width: 16px; height: 16px; }
+  .select-btn.full { width: 100%; justify-content: space-between; }
+  .select-btn.w-fixed { width: 140px; justify-content: space-between; }
+
+  .row-header { display: flex; align-items: center; justify-content: space-between; }
+
+  .dropdown-wrap { position: relative; }
+  .dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 140px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    padding: 4px;
+    z-index: 20;
+  }
+  .dropdown-menu.open { display: block; }
+  .dropdown-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: background-color .15s;
+  }
+  .dropdown-item:hover { background: var(--hover); }
+  .dropdown-item.selected { font-weight: 600; color: var(--primary-dark); background: var(--primary-tint); }
+
+  .view-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+  .view-toggle-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: background-color .15s, color .15s; }
+  .view-toggle-btn + .view-toggle-btn { border-left: 1px solid var(--border); }
+  .view-toggle-btn.active { background: var(--primary-tint); color: var(--primary-dark); }
+
+  .options-list { display: flex; flex-direction: column; gap: 8px; }
+  .option-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  .option-card.selected { border-color: var(--text); }
+  .option-card input { display: none; }
+  .checkbox {
+    margin-top: 2px;
+    width: 16px; height: 16px;
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.25);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    transition: background-color .15s, border-color .15s;
+  }
+  .checkbox.checked { background: var(--primary); border-color: var(--primary); }
+  .checkbox svg { width: 11px; height: 11px; }
+  .option-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .option-title { font-size: 14px; font-weight: 500; margin: 0; }
+  .option-sub { font-size: 12px; font-weight: 500; color: var(--green); margin: 0; }
+  .option-sub .muted { font-weight: 400; color: var(--text-muted); }
+
+  #list-view { display: flex; flex-direction: column; gap: 12px; }
+  #time-rows { display: flex; flex-direction: column; gap: 10px; }
+
+  .time-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    border-radius: 12px;
+    border: 1px solid var(--text);
+    padding: 12px 14px;
+  }
+  .time-row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .time-inputs { display: flex; align-items: center; gap: 8px; width: 100%; }
+  .input-time {
+    flex: 1; min-width: 0; height: 32px;
+    border-radius: 8px; border: 1px solid var(--border);
+    padding: 0 10px; font-size: 14px; outline: none;
+  }
+  .input-time:focus { border-color: var(--primary); }
+  .input-time[readonly] { cursor: pointer; background: transparent; }
+  .arrow-icon { width: 16px; height: 16px; color: var(--text-muted); flex-shrink: 0; }
+
+  .time-popover {
+    display: none; position: fixed; z-index: 30; min-width: 100px; max-height: 220px;
+    overflow-y: auto; background: #fff; border: 1px solid var(--border); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15); padding: 4px;
+  }
+  .time-popover.open { display: block; }
+  .time-popover-item { display: block; width: 100%; text-align: left; padding: 6px 10px; border-radius: 6px; font-size: 13px; }
+  .time-popover-item:hover { background: var(--hover); }
+  .time-popover-item.selected { font-weight: 600; color: var(--primary-dark); background: var(--primary-tint); }
+
+  .date-popover {
+    display: none; position: fixed; z-index: 30; width: 220px;
+    background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15); padding: 10px;
+  }
+  .date-popover.open { display: block; }
+  .date-popover-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
+  .date-popover-nav { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 6px; color: var(--text-muted); }
+  .date-popover-nav:hover { background: var(--hover); }
+  .date-popover-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .dp-weekday { font-size: 10px; color: var(--text-muted); text-align: center; padding: 2px 0; }
+  .dp-day { height: 26px; border-radius: 6px; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+  .dp-day:hover { background: var(--hover); }
+  .dp-day.today { font-weight: 700; color: var(--primary-dark); }
+
+  .slot-day-label { font-size: 12px; font-weight: 500; color: var(--text-soft); margin: 6px 0 2px; }
+  .slot-day-label:first-child { margin-top: 0; }
+  .slot-chip-row { display: flex; align-items: center; gap: 8px; }
+  .slot-chip { display: flex; align-items: center; gap: 7px; flex: 1; min-width: 0; padding: 7px 10px; background: rgba(0,0,0,0.05); border-radius: 8px; }
+  .slot-chip .dot { width: 6px; height: 6px; border-radius: 999px; background: rgba(0,0,0,0.35); flex-shrink: 0; }
+  .slot-chip-time { font-size: 13px; }
+  .slot-empty { font-size: 12px; color: var(--text-muted); padding: 6px 0 2px; }
+
+  .grid-hint { font-size: 12px; color: var(--text-muted); margin: 0 0 10px; }
+  .grid-wrap { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .grid-scroll { overflow-x: auto; }
+  .grid-table { display: grid; }
+  .grid-head-cell {
+    padding: 8px 2px; font-size: 11px; font-weight: 600; text-align: center;
+    background: #fafafa; border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border-soft);
+  }
+  .grid-time-cell {
+    padding: 0 6px; font-size: 10px; color: var(--text-muted);
+    display: flex; align-items: flex-start; justify-content: flex-end;
+    border-right: 1px solid var(--border-soft); white-space: nowrap;
+  }
+  .grid-cell { height: 18px; cursor: pointer; border-right: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); transition: background-color .1s; }
+  .grid-cell:hover { background: var(--hover); }
+  .grid-cell.selected { background: var(--primary); }
+  .grid-cell.selected:hover { background: var(--primary-dark); }
+  .grid-cell.hour-start { border-top: 1px solid var(--border-soft); }
+
+  .link-row { display: flex; align-items: center; gap: 16px; }
+  .link-btn { font-size: 14px; font-weight: 500; color: var(--text-muted); transition: color .15s; display: inline-flex; align-items: center; gap: 6px; }
+  .link-btn:hover { color: var(--text); }
+  .link-btn.push-end { margin-left: auto; }
+
+  .switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 32px; height: 18px;
+    border-radius: 999px;
+    background: #e2e2e2;
+    flex-shrink: 0;
+    transition: background-color .15s;
+  }
+  .switch.on { background: var(--primary); }
+  .switch-thumb {
+    position: absolute;
+    left: 2px;
+    width: 14px; height: 14px;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    transition: transform .15s;
+  }
+  .switch.on .switch-thumb { transform: translateX(14px); }
+
+  .advanced-row {
+    display: flex; align-items: center; justify-content: space-between;
+    flex: 1; height: 32px; cursor: pointer; user-select: none;
+  }
+  .advanced-label { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; }
+  .chevron { width: 16px; height: 16px; color: var(--text-muted); transform: rotate(0deg); transition: transform .15s; }
+  .chevron.open { transform: rotate(90deg); }
+
+  .advanced-content { display: none; flex-direction: column; gap: 16px; padding-top: 4px; }
+  .advanced-content.open { display: flex; }
+  .adv-group { display: flex; flex-direction: column; gap: 16px; }
+  .adv-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .adv-toggle-title { font-size: 14px; font-weight: 500; }
+  .adv-toggle-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .adv-toggle-sub { margin-top: -6px; }
+  .input-number {
+    width: 84px; height: 32px;
+    border-radius: 8px; border: 1px solid var(--border);
+    padding: 0 10px; font-size: 14px; outline: none;
+  }
+  .input-number:focus { border-color: var(--primary); }
+
+  .toolbar {
+    display: flex; align-items: center; gap: 2px;
+    padding: 6px 8px; border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+  .toolbar-btn {
+    width: 28px; height: 28px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background-color .15s;
+  }
+  .toolbar-btn:hover { background: var(--hover); }
+  .rich-box { border-radius: 8px; border: 1px solid var(--border); overflow: hidden; flex: 1; min-width: 0; }
+  .rich-editable {
+    min-height: 96px; padding: 10px 12px; font-size: 14px; outline: none;
+  }
+  .rich-editable:empty:before { content: attr(data-placeholder); color: var(--text-muted); }
+
+  .calendar-row { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; min-width: 0; }
+  .cal-logo { width: 16px; height: 16px; flex-shrink: 0; }
+  .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  footer.footer {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 40px;
+    background: #fff;
+    border-top: 1px solid var(--border-soft);
+  }
+  .btn-secondary {
+    height: 36px; padding: 0 18px; border-radius: 999px;
+    font-size: 14px; font-weight: 500; color: var(--text-soft);
+    transition: background-color .15s;
+  }
+  .btn-secondary:hover { background: var(--hover); }
+  .btn-primary {
+    height: 36px; padding: 0 22px; border-radius: 999px;
+    font-size: 14px; font-weight: 600; color: #fff; background: var(--primary);
+    transition: background-color .15s;
+  }
+  .btn-primary:hover { background: var(--primary-dark); }
+
+  @media (max-width: 640px) {
+    .topbar, .form, footer.footer { padding-left: 20px; padding-right: 20px; }
+    .banner, .divider { margin-left: 0; }
+    .field-row { gap: 12px; }
+    .calendar-row { flex-direction: column; }
+    .intent-row { flex-direction: column; }
+  }
+
+  /* Status pill: a live, always-visible read-out of what this will become.
+     Never a gate - just a label that reflects the choices made so far. */
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: var(--hover-soft);
+    color: var(--text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .status-pill.resolved { background: var(--primary-tint); color: var(--primary-dark); }
+
+  /* Fork 1: intent cards ("find one time for everyone" vs "share your availability") */
+  .intent-row { display: flex; gap: 10px; }
+  .intent-card {
+    flex: 1;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    transition: border-color .15s, background-color .15s;
+  }
+  .intent-card:hover { border-color: var(--text-muted); }
+  .intent-card.selected { border-color: var(--primary); background: var(--primary-tint); }
+  .intent-card-title { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+  .intent-card-title svg { color: var(--primary); flex-shrink: 0; }
+  .intent-card-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.4; }
+
+  /* Sections that only make sense once an intent is picked */
+  #post-intent-sections { display: flex; flex-direction: column; gap: 24px; }
+  .prompt-text { font-size: 13px; color: var(--text-muted); font-style: italic; }
+
+  /* Fork 2: mechanism toggle (specific times vs. open/rolling availability) */
+  .mechanism-row {
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px;
+    background: #f2f2f2;
+    border-radius: 12px;
+  }
+  .mechanism-btn {
+    padding: 0 14px;
+    height: 34px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-soft);
+    transition: background-color .15s, color .15s, box-shadow .15s;
+    white-space: nowrap;
+  }
+  .mechanism-btn:hover:not(.active) { color: var(--text); }
+  .mechanism-btn.active { background: #fff; color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.12); font-weight: 600; }
+
+  /* Capacity: "how many people can end up with a spot", optional, auto-suggested */
+  .capacity-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .capacity-input { width: 140px; }
+  /* Shown only once someone overrides the suggested number, as a plain way back. */
+  .capacity-auto-tag {
+    font-size: 12px; font-weight: 500; border-radius: 999px; border: none;
+    background: none; font-family: inherit; color: var(--primary); padding: 4px 2px; cursor: pointer;
+  }
+  .capacity-auto-tag:hover { color: var(--primary-dark); text-decoration: underline; }
+
+  .optional-tag { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+  .guest-row.is-optional .guest-name { color: var(--text-soft); }
+
+  /* Participants: the shareable link is its own, always-on row, independent of
+     any named guests below it, so the two never read as either/or. */
+  .invite-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--hover-soft);
+    font-size: 13px;
+    color: var(--text-soft);
+  }
+  .invite-toggle-row .icon-xs { color: var(--text-muted); flex-shrink: 0; }
+  .invite-toggle-row .switch { flex-shrink: 0; }
+  .link-access-copy { flex: 1; }
+  .invite-toggle-btn {
+    align-self: flex-start;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--primary);
+    white-space: nowrap;
+  }
+  .invite-toggle-btn:hover { color: var(--primary-dark); }
+  #participants-expanded { display: flex; flex-direction: column; gap: 8px; }
+
+  /* Booking page availability */
+  .day-pill-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .day-pill {
+    width: 36px; height: 32px; border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 12px; font-weight: 600; color: var(--text-soft);
+    transition: background-color .15s, color .15s, border-color .15s;
+  }
+  .day-pill:hover { background: var(--hover-soft); }
+  .day-pill.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .helper-text { font-size: 12px; color: var(--text-muted); margin: 0; }
+</style>
+</head>
+<body data-new-gr-c-s-check-loaded="14.1320.0" data-gr-ext-installed="" data-gr-ext-go-mode="" data-gr-aaa-loaded="14.1320.0" data-gr-aaa-notch-connection-id="1786958639164-0.45382896155853025" data-gr-agent-presence-bridge-connection-id="1786958639166-0.3268477172443268">
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <button type="button" class="btn-close">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+      Close
+    </button>
+    <span class="topbar-title">New event</span>
+    <span class="topbar-spacer"></span>
+  </header>
+
+  <!-- Scrollable form -->
+  <div class="scroll-area">
+    <div class="form">
+
+      <!-- Event name + live status read-out -->
+      <div class="field-title">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px;">
+          <label for="event-name" style="margin-bottom:0;">Event name</label>
+          <span class="status-pill" id="status-pill">Choose an option below</span>
+        </div>
+        <input id="event-name" class="input-title" type="text" value="" placeholder="Add title (optional)">
+      </div>
+
+      <!-- Fork 1: the one question we actually ask up front, in plain language.
+           This alone determines Group Poll vs. everything else - no jargon. -->
+      <div class="field-title" style="gap:10px;">
+        <label>What do you need?</label>
+        <div class="intent-row" role="radiogroup" aria-label="What do you need?">
+          <button type="button" class="intent-card" id="intent-converge" data-intent="converge" role="radio" aria-checked="false">
+            <span class="intent-card-title">
+              <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              Find one time for everyone
+            </span>
+            <span class="intent-card-desc">Guests respond until you land on a single time together.</span>
+          </button>
+          <button type="button" class="intent-card" id="intent-claim" data-intent="claim" role="radio" aria-checked="false">
+            <span class="intent-card-title">
+              <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect height="18" rx="2" width="18" x="3" y="4"></rect><path d="M3 10h18"></path><path d="m9 16 2 2 4-4"></path></svg>
+              Share your availability
+            </span>
+            <span class="intent-card-desc">Offer times or open hours; guests each grab what works for them.</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Everything below only makes sense once Fork 1 is answered -->
+      <div id="post-intent-sections" style="display:none;">
+
+      <!-- Participants: universal in every branch. Not knowing who's coming
+           yet is legitimate for a poll, a sign-up sheet, or a booking page -
+           so this always starts collapsed to "anyone with the link," and
+           only expands once you actually name someone (or ask to). -->
+      <div class="field-row" id="participants-section">
+        <div class="field-icon">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>
+        </div>
+        <div class="field-body">
+          <label id="participants-label">Participants</label>
+
+          <!-- Always on, in every branch: a shareable link. This is additive with
+               named guests below, never replaced by them. -->
+          <div class="invite-toggle-row" id="link-access-row">
+            <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+            <span class="link-access-copy" id="link-access-copy">Anyone with the link can join</span>
+            <button type="button" class="switch on" id="link-access-switch" role="switch" aria-checked="true" aria-label="Allow anyone with the link to join"><span class="switch-thumb"></span></button>
+          </div>
+
+          <!-- Named guests: an addition on top of the link above, not an
+               alternative to it. -->
+          <button type="button" class="invite-toggle-btn" id="invite-toggle-btn">+ Invite specific people too</button>
+
+          <div id="participants-expanded" style="display:none;">
+            <div class="search-wrap">
+              <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg>
+              <input id="guest-search" class="input-sm with-icon" type="text" placeholder="Add guests (optional)">
+            </div>
+            <div class="guest-list" id="guest-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fork 2: only meaningful once you're in the "share availability"
+           branch - a converged poll is always specific proposed times, so
+           there's nothing to ask there. -->
+      <div class="field-row" id="mechanism-section" style="display:none;">
+        <div class="field-icon">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"></path><circle cx="12" cy="12" r="10"></circle></svg>
+        </div>
+        <div class="field-body" style="gap:12px;">
+          <label>How will people get a time?</label>
+          <div class="mechanism-row" role="radiogroup" aria-label="Mechanism">
+            <button type="button" class="mechanism-btn" data-mechanism="specific" role="radio" aria-checked="false">I have specific times in mind</button>
+            <button type="button" class="mechanism-btn" data-mechanism="rolling" role="radio" aria-checked="false">Open up my regular hours</button>
+          </div>
+
+          <!-- Capacity: optional, auto-suggested once exactly one required
+               guest is named; never a forced question. -->
+          <div class="capacity-row" id="capacity-row" style="display:none;">
+            <label style="font-size:13px; font-weight:500; color:var(--text-soft);" for="capacity-input">Spots available</label>
+            <input id="capacity-input" class="input-sm capacity-input" type="number" min="1" placeholder="No limit">
+            <button type="button" class="capacity-auto-tag" id="capacity-auto-tag"></button>
+            <p class="helper-text" id="capacity-hint" style="width:100%;"></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live explanation of what's about to be created, in place of the
+           old "Group poll or sign-up sheet" banner that only covered two
+           of the four outcomes. -->
+      <div class="banner" id="mode-banner" style="display:none;">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+        <div style="flex:1; min-width:0;">
+          <p class="banner-title" id="mode-banner-title">Group poll or sign-up sheet</p>
+          <p class="banner-text" id="mode-banner-text">Want guests to each claim their own time instead of voting? Turn on Open slots.</p>
+        </div>
+        <button class="banner-close" id="mode-banner-close" aria-label="Close">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Group poll / sign-up sheet / 1:1 time options -->
+      <div id="times-section">
+      <div class="field-row">
+        <div class="field-icon">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 14v2.2l1.6 1"></path><path d="M16 2v4"></path><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"></path><path d="M3 10h5"></path><path d="M8 2v4"></path><circle cx="16" cy="16" r="6"></circle></svg>
+        </div>
+        <div class="field-body" style="gap:12px;">
+          <div class="row-header">
+            <label id="poll-type-label">Group poll</label>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div class="dropdown-wrap" id="duration-dropdown-wrap">
+                <button type="button" class="select-btn w-fixed" id="duration-btn">
+                  <span id="duration-label">1 hour</span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                </button>
+                <div class="dropdown-menu" id="duration-menu">
+                  <button type="button" class="dropdown-item" data-duration="15 min">15 min</button>
+                  <button type="button" class="dropdown-item" data-duration="30 min">30 min</button>
+                  <button type="button" class="dropdown-item" data-duration="45 min">45 min</button>
+                  <button type="button" class="dropdown-item selected" data-duration="1 hour">1 hour</button>
+                  <button type="button" class="dropdown-item" data-duration="1.5 hours">1.5 hours</button>
+                  <button type="button" class="dropdown-item" data-duration="2 hours">2 hours</button>
+                </div>
+              </div>
+              <div class="view-toggle">
+                <button type="button" class="view-toggle-btn active" id="view-list-btn" title="List view">
+                  <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h.01"></path><path d="M3 18h.01"></path><path d="M3 6h.01"></path><path d="M8 12h13"></path><path d="M8 18h13"></path><path d="M8 6h13"></path></svg>
+                </button>
+                <button type="button" class="view-toggle-btn" id="view-grid-btn" title="Calendar grid view">
+                  <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="14" rx="1"></rect><rect width="7" height="7" x="3" y="14" rx="1"></rect></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- List view: proposed times derived from the calendar grid, plus manual custom times -->
+          <div id="list-view" style="display: block;">
+            <div class="options-list" id="options-list"><p class="slot-empty">No times proposed yet. Pick some on the calendar grid or add a custom time below.</p></div>
+
+            <!-- custom time rows (added via "+ Add"; none by default) -->
+            <div id="time-rows"><div class="time-row">
+        <span class="checkbox checked"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></span>
+        <div class="time-row-body">
+          <div class="time-inputs">
+            <input class="input-time" type="text" readonly="" value="9:00 am">
+            <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+            <input class="input-time" type="text" readonly="" value="9:30 am">
+          </div>
+          <button type="button" class="select-btn full">
+            <svg class="icon-xs" style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect height="18" rx="2" width="18" x="3" y="4"></rect><path d="M3 10h18"></path></svg>
+            <span style="flex:1;text-align:left;">Mon, Aug 17</span>
+          </button>
+        </div>
+        <button type="button" class="icon-btn remove-time-btn" title="Remove time"><svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></div></div>
+
+            <div class="link-row">
+              <button type="button" class="link-btn" id="suggest-times-btn">Suggest more times</button>
+              <button type="button" class="link-btn push-end" id="add-time-btn">
+                <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+                Add
+              </button>
+            </div>
+          </div>
+
+          <!-- Grid view: pick times directly on a calendar grid -->
+          <div id="grid-view" style="display: none;">
+            <p class="grid-hint">Click a day and time to propose it. Click again to remove it.</p>
+            <div class="grid-wrap">
+              <div class="grid-scroll">
+                <div class="grid-table" id="grid-table" style="grid-template-columns: 56px repeat(6, 1fr);"><div></div><div class="grid-head-cell">Mon Feb 10</div><div class="grid-head-cell">Tue Feb 11</div><div class="grid-head-cell">Wed Feb 12</div><div class="grid-head-cell">Thu Feb 13</div><div class="grid-head-cell">Fri Feb 14</div><div class="grid-head-cell">Sat Feb 15</div><div class="grid-time-cell">8:00 AM</div><div class="grid-cell hour-start" data-day-key="2026-02-10" data-half="0"></div><div class="grid-cell hour-start" data-day-key="2026-02-11" data-half="0"></div><div class="grid-cell hour-start" data-day-key="2026-02-12" data-half="0"></div><div class="grid-cell hour-start" data-day-key="2026-02-13" data-half="0"></div><div class="grid-cell hour-start" data-day-key="2026-02-14" data-half="0"></div><div class="grid-cell hour-start" data-day-key="2026-02-15" data-half="0"></div><div class="grid-time-cell"></div><div class="grid-cell" data-day-key="2026-02-10" data-half="1"></div><div class="grid-cell" data-day-key="2026-02-11" data-half="1"></div><div class="grid-cell" data-day-key="2026-02-12" data-half="1"></div><div class="grid-cell" data-day-key="2026-02-13" data-half="1"></div><div class="grid-cell" data-day-key="2026-02-14" data-half="1"></div><div class="grid-cell" data-day-key="2026-02-15" data-half="1"></div><div class="grid-time-cell">9:00 AM</div><div class="grid-cell hour-start" data-day-key="2026-02-10" data-half="2"></div><div class="grid-cell hour-start" data-day-key="2026-02-11" data-half="2"></div><div class="grid-cell hour-start" data-day-key="2026-02-12" data-half="2"></div><div class="grid-cell hour-start" data-day-key="2026-02-13" data-half="2"></div><div class="grid-cell hour-start" data-day-key="2026-02-14" data-half="2"></div><div class="grid-cell hour-start" data-day-key="2026-02-15" data-half="2"></div><div class="grid-time-cell"></div><div class="grid-cell" data-day-key="2026-02-10" data-half="3"></div><div class="grid-cell" data-day-key="2026-02-11" data-half="3"></div><div class="grid-cell" data-day-key="2026-02-12" data-half="3"></div><div class="grid-cell" data-day-key="2026-02-13" data-half="3"></div><div class="grid-cell" data-day-key="2026-02-14" data-half="3"></div><div class="grid-cell" data-day-key="2026-02-15" data-half="3"></div><div class="grid-time-cell">10:00 AM</div><div class="grid-cell hour-start" data-day-key="2026-02-10" data-half="4"></div><div class="grid-cell hour-start" data-day-key="2026-02-11" data-half="4"></div><div class="grid-cell hour-start" data-day-key="2026-02-12" data-half="4"></div><div class="grid-cell hour-start" data-day-key="2026-02-13" data-half="4"></div><div class="grid-cell hour-start" data-day-key="2026-02-14" data-half="4"></div><div class="grid-cell hour-start" data-day-key="2026-02-15" data-half="4"></div><div class="grid-time-cell"></div><div class="grid-cell" data-day-key="2026-02-10" data-half="5"></div><div class="grid-cell" data-day-key="2026-02-11" data-half="5"></div><div class="grid-cell" data-day-key="2026-02-12" data-half="5"></div><div class="grid-cell" data-day-key="2026-02-13" data-half="5"></div><div class="grid-cell" data-day-key="2026-02-14" data-half="5"></div><div class="grid-cell" data-day-key="2026-02-15" data-half="5"></div><div class="grid-time-cell">11:00 AM</div><div class="grid-cell hour-start" data-day-key="2026-02-10" data-half="6"></div><div class="grid-cell hour-start" data-day-key="2026-02-11" data-half="6"></div><div class="grid-cell hour-start" data-day-key="2026-02-12" data-half="6"></div><div class="grid-cell hour-start" data-day-key="2026-02-13" data-half="6"></div><div class="grid-cell hour-start" data-day-key="2026-02-14" data-half="6"></div><div class="grid-cell hour-start" data-day-key="2026-02-15" data-half="6"></div><div class="grid-time-cell"></div><div class="grid-cell" data-day-key="2026-02-10" data-half="7"></div><div class="grid-cell" data-day-key="2026-02-11" data-half="7"></div><div class="grid-cell" data-day-key="2026-02-12" data-half="7"></div><div class="grid-cell" data-day-key="2026-02-13" data-half="7"></div><div class="grid-cell" data-day-key="2026-02-14" data-half="7"></div><div class="grid-cell" data-day-key="2026-02-15" data-half="7"></div><div class="grid-time-cell">12:00 PM</div><div class="grid-cell hour-start" data-day-key="2026-02-10" data-half="8"></div><div class="grid-cell hour-start" data-day-key="2026-02-11" data-half="8"></div><div class="grid-cell hour-start" data-day-key="2026-02-12" data-half="8"></div><div class="grid-cell hour-start" data-day-key="2026-02-13" data-half="8"></div><div class="grid-cell hour-start" data-day-key="2026-02-14" data-half="8"></div><div class="grid-cell hour-start" data-day-key="2026-02-15" data-half="8"></div><div class="grid-time-cell"></div><div class="grid-cell" data-day-key="2026-02-10" data-half="9"></div><div class="grid-cell" data-day-key="2026-02-11" data-half="9"></div><div class="grid-cell" data-day-key="2026-02-12" data-half="9"></div><div class="grid-cell" data-day-key="2026-02-13" data-half="9"></div><div class="grid-cell" data-day-key="2026-02-14" data-half="9"></div><div class="grid-cell" data-day-key="2026-02-15" data-half="9"></div><div class="grid-time-cell">1:00 PM</div><div class="grid-cell hour-start" data-day-key="2026-02-10" data-half="10"></div><div class="grid-cell hour-start" data-day-key="2026-02-11" data-half="10"></div><div class="grid-cell hour-start" data-day-key="2026-02-12" data-half="10"></div><div class="grid-cell hour-start" data-day-key="2026-02-13" data-half="10"></div><div class="grid-cell hour-start" data-day-key="2026-02-14" data-half="10"></div><div class="grid-cell hour-start" data-day-key="2026-02-15" data-half="10"></div><div class="grid-time-cell"></div><div class="grid-cell" data-day-key="2026-02-10" data-half="11"></div><div class="grid-cell" data-day-key="2026-02-11" data-half="11"></div><div class="grid-cell" data-day-key="2026-02-12" data-half="11"></div><div class="grid-cell" data-day-key="2026-02-13" data-half="11"></div><div class="grid-cell" data-day-key="2026-02-14" data-half="11"></div><div class="grid-cell" data-day-key="2026-02-15" data-half="11"></div><div class="grid-time-cell">2:00 PM</div><div class="grid-cell hour-start" data-day-key="2026-02-10" data-half="12"></div><div class="grid-cell hour-start" data-day-key="2026-02-11" data-half="12"></div><div class="grid-cell hour-start" data-day-key="2026-02-12" data-half="12"></div><div class="grid-cell hour-start" data-day-key="2026-02-13" data-half="12"></div><div class="grid-cell hour-start" data-day-key="2026-02-14" data-half="12"></div><div class="grid-cell hour-start" data-day-key="2026-02-15" data-half="12"></div><div class="grid-time-cell"></div><div class="grid-cell" data-day-key="2026-02-10" data-half="13"></div><div class="grid-cell" data-day-key="2026-02-11" data-half="13"></div><div class="grid-cell" data-day-key="2026-02-12" data-half="13"></div><div class="grid-cell" data-day-key="2026-02-13" data-half="13"></div><div class="grid-cell" data-day-key="2026-02-14" data-half="13"></div><div class="grid-cell" data-day-key="2026-02-15" data-half="13"></div><div class="grid-time-cell">3:00 PM</div><div class="grid-cell hour-start" data-day-key="2026-02-10" data-half="14"></div><div class="grid-cell hour-start" data-day-key="2026-02-11" data-half="14"></div><div class="grid-cell hour-start" data-day-key="2026-02-12" data-half="14"></div><div class="grid-cell hour-start" data-day-key="2026-02-13" data-half="14"></div><div class="grid-cell hour-start" data-day-key="2026-02-14" data-half="14"></div><div class="grid-cell hour-start" data-day-key="2026-02-15" data-half="14"></div><div class="grid-time-cell"></div><div class="grid-cell" data-day-key="2026-02-10" data-half="15"></div><div class="grid-cell" data-day-key="2026-02-11" data-half="15"></div><div class="grid-cell" data-day-key="2026-02-12" data-half="15"></div><div class="grid-cell" data-day-key="2026-02-13" data-half="15"></div><div class="grid-cell" data-day-key="2026-02-14" data-half="15"></div><div class="grid-cell" data-day-key="2026-02-15" data-half="15"></div><div class="grid-time-cell">4:00 PM</div><div class="grid-cell hour-start" data-day-key="2026-02-10" data-half="16"></div><div class="grid-cell hour-start" data-day-key="2026-02-11" data-half="16"></div><div class="grid-cell hour-start" data-day-key="2026-02-12" data-half="16"></div><div class="grid-cell hour-start" data-day-key="2026-02-13" data-half="16"></div><div class="grid-cell hour-start" data-day-key="2026-02-14" data-half="16"></div><div class="grid-cell hour-start" data-day-key="2026-02-15" data-half="16"></div><div class="grid-time-cell"></div><div class="grid-cell" data-day-key="2026-02-10" data-half="17"></div><div class="grid-cell" data-day-key="2026-02-11" data-half="17"></div><div class="grid-cell" data-day-key="2026-02-12" data-half="17"></div><div class="grid-cell" data-day-key="2026-02-13" data-half="17"></div><div class="grid-cell" data-day-key="2026-02-14" data-half="17"></div><div class="grid-cell" data-day-key="2026-02-15" data-half="17"></div><div class="grid-time-cell">5:00 PM</div><div class="grid-cell hour-start" data-day-key="2026-02-10" data-half="18"></div><div class="grid-cell hour-start" data-day-key="2026-02-11" data-half="18"></div><div class="grid-cell hour-start" data-day-key="2026-02-12" data-half="18"></div><div class="grid-cell hour-start" data-day-key="2026-02-13" data-half="18"></div><div class="grid-cell hour-start" data-day-key="2026-02-14" data-half="18"></div><div class="grid-cell hour-start" data-day-key="2026-02-15" data-half="18"></div><div class="grid-time-cell"></div><div class="grid-cell" data-day-key="2026-02-10" data-half="19"></div><div class="grid-cell" data-day-key="2026-02-11" data-half="19"></div><div class="grid-cell" data-day-key="2026-02-12" data-half="19"></div><div class="grid-cell" data-day-key="2026-02-13" data-half="19"></div><div class="grid-cell" data-day-key="2026-02-14" data-half="19"></div><div class="grid-cell" data-day-key="2026-02-15" data-half="19"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div><!-- /times-section -->
+
+      <!-- Booking Page availability (shown only for the Booking Page type) -->
+      <div id="booking-availability-section" style="display:none;">
+        <div class="field-row">
+          <div class="field-icon">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect height="18" rx="2" width="18" x="3" y="4"></rect><path d="M3 10h18"></path><path d="M8 2v4"></path><path d="M16 2v4"></path><path d="m9 16 2 2 4-4"></path></svg>
+          </div>
+          <div class="field-body" style="gap:14px;">
+            <div class="row-header">
+              <label>Availability</label>
+              <div class="dropdown-wrap" id="booking-duration-dropdown-wrap">
+                <button type="button" class="select-btn w-fixed" id="booking-duration-btn">
+                  <span id="booking-duration-label">30 min</span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                </button>
+                <div class="dropdown-menu" id="booking-duration-menu">
+                  <button type="button" class="dropdown-item" data-duration="15 min">15 min</button>
+                  <button type="button" class="dropdown-item selected" data-duration="30 min">30 min</button>
+                  <button type="button" class="dropdown-item" data-duration="45 min">45 min</button>
+                  <button type="button" class="dropdown-item" data-duration="1 hour">1 hour</button>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <p class="helper-text" style="margin-bottom:8px;">Guests can book this on:</p>
+              <div class="day-pill-row" id="day-pill-row">
+                <button type="button" class="day-pill" data-day="0">S</button>
+                <button type="button" class="day-pill active" data-day="1">M</button>
+                <button type="button" class="day-pill active" data-day="2">T</button>
+                <button type="button" class="day-pill active" data-day="3">W</button>
+                <button type="button" class="day-pill active" data-day="4">T</button>
+                <button type="button" class="day-pill active" data-day="5">F</button>
+                <button type="button" class="day-pill" data-day="6">S</button>
+              </div>
+            </div>
+
+            <div class="time-inputs" style="max-width:280px;">
+              <input class="input-time" type="text" readonly value="9:00 am">
+              <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+              <input class="input-time" type="text" readonly value="5:00 pm">
+            </div>
+            <p class="helper-text">Based on your working hours. Guests will see slots in their own time zone, minus anything already busy on your calendar.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Advanced options -->
+      <div class="field-row">
+        <div class="field-icon">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5H3"></path><path d="M12 19H3"></path><path d="M14 3v4"></path><path d="M16 17v4"></path><path d="M21 12h-9"></path><path d="M21 19h-5"></path><path d="M21 5h-7"></path><path d="M8 10v4"></path><path d="M8 12H3"></path></svg>
+        </div>
+        <div class="field-body">
+          <div class="advanced-row" id="advanced-toggle">
+            <span class="advanced-label">
+              Advanced options
+              <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+            </span>
+            <svg class="chevron" id="advanced-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+          </div>
+
+          <div class="advanced-content" id="advanced-content">
+
+            <!-- 1:1 advanced options -->
+            <div class="adv-group" id="advanced-1on1" style="display: none;">
+              <div class="adv-toggle-row">
+                <div>
+                  <div class="adv-toggle-title">Automatic reminders</div>
+                  <div class="adv-toggle-desc">Email your guest if they haven't responded</div>
+                </div>
+                <button type="button" class="switch on"><span class="switch-thumb"></span></button>
+              </div>
+            </div>
+
+            <!-- Group poll advanced options -->
+            <div class="adv-group" id="advanced-group-poll" style="display: flex;">
+              <div>
+                <div class="adv-toggle-row">
+                  <div class="adv-toggle-title">Set the voting deadline</div>
+                  <button type="button" class="switch" data-reveals="voting-deadline-sub"><span class="switch-thumb"></span></button>
+                </div>
+                <div class="adv-toggle-sub" id="voting-deadline-sub" style="display:none; margin-top:10px;">
+                  <button type="button" class="select-btn w-fixed" style="width:190px;">
+                    <span>21 Feb 2026, 9:00 am</span>
+                    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <div class="adv-toggle-row">
+                  <div class="adv-toggle-title">Max choices per participant</div>
+                  <button type="button" class="switch" data-reveals="max-choices-sub"><span class="switch-thumb"></span></button>
+                </div>
+                <div class="adv-toggle-sub" id="max-choices-sub" style="display:none; margin-top:10px;">
+                  <button type="button" class="select-btn w-fixed">
+                    <span>3</span>
+                    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="adv-toggle-row">
+                <div>
+                  <div class="adv-toggle-title">Automatic reminders</div>
+                  <div class="adv-toggle-desc">Email invited participants who don't respond</div>
+                </div>
+                <button type="button" class="switch on"><span class="switch-thumb"></span></button>
+              </div>
+            </div>
+
+            <!-- Sign-up sheet advanced options -->
+            <div class="adv-group" id="advanced-sign-up" style="display: none;">
+              <div class="adv-toggle-row">
+                <div class="adv-toggle-title">Show participant names</div>
+                <button type="button" class="switch on"><span class="switch-thumb"></span></button>
+              </div>
+
+              <div>
+                <div class="adv-toggle-row">
+                  <div class="adv-toggle-title">Limit registrations per person</div>
+                  <button type="button" class="switch" data-reveals="limit-reg-sub"><span class="switch-thumb"></span></button>
+                </div>
+                <div class="adv-toggle-sub" id="limit-reg-sub" style="display:none; margin-top:10px;">
+                  <input class="input-number" type="number" min="1" value="1" placeholder="1">
+                </div>
+              </div>
+
+              <div class="adv-toggle-row">
+                <div class="adv-toggle-title">Enable waitlist</div>
+                <button type="button" class="switch"><span class="switch-thumb"></span></button>
+              </div>
+
+              <div class="adv-toggle-row">
+                <div class="adv-toggle-title">Notify me on sign-up</div>
+                <button type="button" class="switch on"><span class="switch-thumb"></span></button>
+              </div>
+
+              <div>
+                <div class="adv-toggle-row">
+                  <div class="adv-toggle-title">Registration deadline</div>
+                  <button type="button" class="switch" data-reveals="reg-deadline-sub"><span class="switch-thumb"></span></button>
+                </div>
+                <div class="adv-toggle-sub" id="reg-deadline-sub" style="display:none; margin-top:10px;">
+                  <button type="button" class="select-btn w-fixed" style="width:190px;">
+                    <span>21 Feb 2026, 11:59 pm</span>
+                    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Booking Page advanced options -->
+            <div class="adv-group" id="advanced-booking-page" style="display: none;">
+              <div class="adv-toggle-row">
+                <div>
+                  <div class="adv-toggle-title">Buffer between bookings</div>
+                  <div class="adv-toggle-desc">Leave gap time before and after each booking</div>
+                </div>
+                <button type="button" class="select-btn w-fixed">
+                  <span>15 min</span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                </button>
+              </div>
+
+              <div class="adv-toggle-row">
+                <div>
+                  <div class="adv-toggle-title">Minimum notice</div>
+                  <div class="adv-toggle-desc">How soon before a slot someone can still book it</div>
+                </div>
+                <button type="button" class="select-btn w-fixed">
+                  <span>4 hours</span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                </button>
+              </div>
+
+              <div>
+                <div class="adv-toggle-row">
+                  <div class="adv-toggle-title">Limit bookings per day</div>
+                  <button type="button" class="switch" data-reveals="max-bookings-sub"><span class="switch-thumb"></span></button>
+                </div>
+                <div class="adv-toggle-sub" id="max-bookings-sub" style="display:none; margin-top:10px;">
+                  <input class="input-number" type="number" min="1" value="5" placeholder="5">
+                </div>
+              </div>
+
+              <div class="adv-toggle-row">
+                <div>
+                  <div class="adv-toggle-title">Require confirmation</div>
+                  <div class="adv-toggle-desc">Review and approve each booking before it's confirmed</div>
+                </div>
+                <button type="button" class="switch"><span class="switch-thumb"></span></button>
+              </div>
+            </div>
+
+            <div class="divider" style="margin-left:0;"></div>
+
+            <!-- Video conferencing -->
+            <div class="field-row center">
+              <div class="field-icon">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"></path><rect height="12" rx="2" width="14" x="2" y="6"></rect></svg>
+              </div>
+              <div style="flex:1; min-width:0;">
+                <button type="button" class="select-btn">
+                  <svg class="cal-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6.5A2.5 2.5 0 015.5 4h8A2.5 2.5 0 0116 6.5v11a2.5 2.5 0 01-2.5 2.5h-8A2.5 2.5 0 013 17.5v-11z" fill="#00832D"></path><path d="M16 9l5-3.5v13L16 15V9z" fill="#00AC47"></path><path d="M3 6.5A2.5 2.5 0 015.5 4h8A2.5 2.5 0 0116 6.5V12H3V6.5z" fill="#0066DA"></path><path d="M16 12v5.5a2.5 2.5 0 01-2.5 2.5h-8A2.5 2.5 0 013 17.5V12h13z" fill="#00832D"></path><path d="M16 12l5-3.5V12h-5z" fill="#00AC47"></path><path d="M16 12h5v6.5L16 15v-3z" fill="#FFBA00"></path></svg>
+                  <span>Google Meet</span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="divider" style="margin-left:0;"></div>
+
+            <!-- Location -->
+            <div class="field-row center">
+              <div class="field-icon">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              </div>
+              <div style="flex:1; min-width:0;">
+                <input class="input-sm" type="text" placeholder="Add location">
+              </div>
+            </div>
+
+            <div class="divider" style="margin-left:0;"></div>
+
+            <!-- Description -->
+            <div class="field-row">
+              <div class="field-icon">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
+              </div>
+              <div class="rich-box">
+                <div class="toolbar">
+                  <button class="toolbar-btn" title="Bold"><svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8"></path></svg></button>
+                  <button class="toolbar-btn" title="Italic"><svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" x2="10" y1="4" y2="4"></line><line x1="14" x2="5" y1="20" y2="20"></line><line x1="15" x2="9" y1="4" y2="20"></line></svg></button>
+                  <button class="toolbar-btn" title="Underline"><svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v6a6 6 0 0 0 12 0V4"></path><line x1="4" x2="20" y1="20" y2="20"></line></svg></button>
+                  <button class="toolbar-btn" title="Bullet list"><svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h.01"></path><path d="M3 12h.01"></path><path d="M3 19h.01"></path><path d="M8 5h13"></path><path d="M8 12h13"></path><path d="M8 19h13"></path></svg></button>
+                </div>
+                <div class="rich-editable" contenteditable="true" data-placeholder="Add description"></div>
+              </div>
+            </div>
+
+            <div class="divider" style="margin-left:0;"></div>
+
+            <!-- Calendar / visibility / busy -->
+            <div class="field-row">
+              <div class="field-icon">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect height="18" rx="2" width="18" x="3" y="4"></rect><path d="M3 10h18"></path></svg>
+              </div>
+              <div class="calendar-row">
+                <button type="button" class="select-btn">
+                  <svg class="cal-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect fill="#4285F4" height="20" rx="2" width="20" x="2" y="2"></rect><rect fill="#fff" height="16" rx="1" width="16" x="4" y="4"></rect><rect fill="#4285F4" height="5" width="16" x="4" y="4"></rect><text fill="#4285F4" font-family="sans-serif" font-size="9" font-weight="bold" text-anchor="middle" x="12" y="17">31</text></svg>
+                  <span class="truncate">work.workcal@company.com</span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                </button>
+                <button type="button" class="select-btn">
+                  <span>Default visibility</span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                </button>
+                <button type="button" class="select-btn">
+                  <span>Busy</span>
+                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      </div><!-- /post-intent-sections -->
+
+    </div>
+  </div>
+
+  <!-- Sticky footer -->
+  <footer class="footer">
+    <button type="button" class="btn-secondary">Cancel</button>
+    <button type="button" class="btn-primary" id="create-btn">Create</button>
+  </footer>
+
+  <!-- Shared popovers for the custom time row's time-of-day and date pickers -->
+  <div class="time-popover" id="time-value-popover" style="top: 469.781px; left: 490px;">
+    <div class="time-popover-list" id="time-popover-list"><button type="button" class="time-popover-item">12:00 am</button><button type="button" class="time-popover-item">12:30 am</button><button type="button" class="time-popover-item">1:00 am</button><button type="button" class="time-popover-item">1:30 am</button><button type="button" class="time-popover-item">2:00 am</button><button type="button" class="time-popover-item">2:30 am</button><button type="button" class="time-popover-item">3:00 am</button><button type="button" class="time-popover-item">3:30 am</button><button type="button" class="time-popover-item">4:00 am</button><button type="button" class="time-popover-item">4:30 am</button><button type="button" class="time-popover-item">5:00 am</button><button type="button" class="time-popover-item">5:30 am</button><button type="button" class="time-popover-item">6:00 am</button><button type="button" class="time-popover-item">6:30 am</button><button type="button" class="time-popover-item">7:00 am</button><button type="button" class="time-popover-item">7:30 am</button><button type="button" class="time-popover-item">8:00 am</button><button type="button" class="time-popover-item">8:30 am</button><button type="button" class="time-popover-item selected">9:00 am</button><button type="button" class="time-popover-item">9:30 am</button><button type="button" class="time-popover-item">10:00 am</button><button type="button" class="time-popover-item">10:30 am</button><button type="button" class="time-popover-item">11:00 am</button><button type="button" class="time-popover-item">11:30 am</button><button type="button" class="time-popover-item">12:00 pm</button><button type="button" class="time-popover-item">12:30 pm</button><button type="button" class="time-popover-item">1:00 pm</button><button type="button" class="time-popover-item">1:30 pm</button><button type="button" class="time-popover-item">2:00 pm</button><button type="button" class="time-popover-item">2:30 pm</button><button type="button" class="time-popover-item">3:00 pm</button><button type="button" class="time-popover-item">3:30 pm</button><button type="button" class="time-popover-item">4:00 pm</button><button type="button" class="time-popover-item">4:30 pm</button><button type="button" class="time-popover-item">5:00 pm</button><button type="button" class="time-popover-item">5:30 pm</button><button type="button" class="time-popover-item">6:00 pm</button><button type="button" class="time-popover-item">6:30 pm</button><button type="button" class="time-popover-item">7:00 pm</button><button type="button" class="time-popover-item">7:30 pm</button><button type="button" class="time-popover-item">8:00 pm</button><button type="button" class="time-popover-item">8:30 pm</button><button type="button" class="time-popover-item">9:00 pm</button><button type="button" class="time-popover-item">9:30 pm</button><button type="button" class="time-popover-item">10:00 pm</button><button type="button" class="time-popover-item">10:30 pm</button><button type="button" class="time-popover-item">11:00 pm</button><button type="button" class="time-popover-item">11:30 pm</button></div>
+  </div>
+  <div class="date-popover" id="date-popover" style="top: 509.781px; left: 490px;">
+    <div class="date-popover-header">
+      <button type="button" class="date-popover-nav" id="dp-prev">
+        <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+      </button>
+      <span id="dp-month-label">Aug 2026</span>
+      <button type="button" class="date-popover-nav" id="dp-next">
+        <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+      </button>
+    </div>
+    <div class="date-popover-grid" id="dp-grid"><div class="dp-weekday">S</div><div class="dp-weekday">M</div><div class="dp-weekday">T</div><div class="dp-weekday">W</div><div class="dp-weekday">T</div><div class="dp-weekday">F</div><div class="dp-weekday">S</div><div></div><div></div><div></div><div></div><div></div><div></div><button type="button" class="dp-day">1</button><button type="button" class="dp-day">2</button><button type="button" class="dp-day">3</button><button type="button" class="dp-day">4</button><button type="button" class="dp-day">5</button><button type="button" class="dp-day">6</button><button type="button" class="dp-day">7</button><button type="button" class="dp-day">8</button><button type="button" class="dp-day">9</button><button type="button" class="dp-day">10</button><button type="button" class="dp-day">11</button><button type="button" class="dp-day">12</button><button type="button" class="dp-day">13</button><button type="button" class="dp-day">14</button><button type="button" class="dp-day">15</button><button type="button" class="dp-day">16</button><button type="button" class="dp-day today">17</button><button type="button" class="dp-day">18</button><button type="button" class="dp-day">19</button><button type="button" class="dp-day">20</button><button type="button" class="dp-day">21</button><button type="button" class="dp-day">22</button><button type="button" class="dp-day">23</button><button type="button" class="dp-day">24</button><button type="button" class="dp-day">25</button><button type="button" class="dp-day">26</button><button type="button" class="dp-day">27</button><button type="button" class="dp-day">28</button><button type="button" class="dp-day">29</button><button type="button" class="dp-day">30</button><button type="button" class="dp-day">31</button></div>
+  </div>
+
+  <script>
+    // ── The organic flow ──
+    // Instead of a flat 4-way type picker, this infers what's being created
+    // from a small number of plain-language choices, following the logic:
+    //
+    //  Fork 1 (explicit, asked up front): does everyone need to land on the
+    //  SAME shared time together ("converge" - Group Poll), or is it fine if
+    //  different people end up with different times ("claim" - everything
+    //  else)? This alone rules Group Poll in or out, regardless of whether
+    //  anyone's been named yet - a poll with zero known voters, shared as a
+    //  public link, is completely normal.
+    //
+    //  Fork 2 (only within "claim"): specific proposed times, or open/rolling
+    //  availability? A converged poll is always specific times, so this
+    //  question doesn't even apply there.
+    //
+    //  Capacity (never asked - just a live, editable, auto-suggested number):
+    //  how many people can ultimately grab a spot. Defaults to unlimited.
+    //  The moment exactly one *required* guest is named, it nudges to 1 as a
+    //  courtesy - that's what makes something a "1:1" rather than a "Sign-up
+    //  Sheet" - but it's always overridable, and empty participants never
+    //  forces a guess either way.
+    //
+    // "1:1" / "Sign-up Sheet" / "Booking Page" / "Group Poll" are therefore
+    // not four sibling types the user picks from - they're just the live
+    // label computed from {intent, mechanism, capacity}, shown in the status
+    // pill so the inference is never silent.
+    const eventNameInput = document.getElementById('event-name');
+    const statusPill = document.getElementById('status-pill');
+    const postIntentSections = document.getElementById('post-intent-sections');
+    const intentCards = document.querySelectorAll('.intent-card');
+    const mechanismSection = document.getElementById('mechanism-section');
+    const mechanismButtons = document.querySelectorAll('.mechanism-btn');
+    const capacityRow = document.getElementById('capacity-row');
+    const capacityInput = document.getElementById('capacity-input');
+    const capacityAutoTag = document.getElementById('capacity-auto-tag');
+    const capacityHint = document.getElementById('capacity-hint');
+    const bannerEl = document.getElementById('mode-banner');
+    const bannerTitle = document.getElementById('mode-banner-title');
+    const bannerText = document.getElementById('mode-banner-text');
+    const participantsLabel = document.getElementById('participants-label');
+    const linkAccessCopy = document.getElementById('link-access-copy');
+    const linkAccessSwitch = document.getElementById('link-access-switch');
+    const inviteToggleBtn = document.getElementById('invite-toggle-btn');
+    const participantsExpanded = document.getElementById('participants-expanded');
+    const pollTypeLabel = document.getElementById('poll-type-label');
+    const timesSection = document.getElementById('times-section');
+    const bookingSection = document.getElementById('booking-availability-section');
+    const createBtn = document.getElementById('create-btn');
+    const advGroups = {
+      '1on1': document.getElementById('advanced-1on1'),
+      'group-poll': document.getElementById('advanced-group-poll'),
+      'sign-up': document.getElementById('advanced-sign-up'),
+      'booking-page': document.getElementById('advanced-booking-page'),
+    };
+
+    const TYPE_LABELS = { 'group-poll': 'Group Poll', '1on1': '1:1', 'sign-up': 'Sign-up Sheet', 'booking-page': 'Booking Page' };
+    const DEFAULT_TITLES = { 'group-poll': 'Group Poll', '1on1': '1:1 Meeting', 'sign-up': 'Sign Up Sheet', 'booking-page': 'Booking Page' };
+    const BANNER_COPY = {
+      'group-poll': { title: 'Group poll', text: 'Guests vote until you land on one time everybody attends together.' },
+      '1on1': { title: '1:1', text: "You've proposed times for one guest. They'll pick whichever works." },
+      'sign-up': { title: 'Sign-up sheet', text: 'Anyone who gets this (invited, or via a link) can claim one of the times below.' },
+      'booking-page': { title: 'Booking page', text: 'Anyone with the link can book an open slot from the availability below.' },
+    };
+
+    const state = { intent: null, mechanism: null, manualExpanded: false, capacityAuto: true, linkEnabled: true };
+    let lastAutoTitle = '';
+
+    function requiredGuestCount() {
+      return guestList.querySelectorAll('.guest-row:not(.is-optional)').length;
+    }
+
+    // The one and only place "which of the four things is this" gets decided.
+    function resolvedType() {
+      if (state.intent === 'converge') return 'group-poll';
+      if (state.intent === 'claim' && state.mechanism === 'specific') {
+        return capacityInput.value.trim() === '1' ? '1on1' : 'sign-up';
+      }
+      if (state.intent === 'claim' && state.mechanism === 'rolling') return 'booking-page';
+      return null; // not enough answered yet
+    }
+
+    function updateCapacitySuggestion() {
+      if (!state.capacityAuto) return;
+      // A link that's still on means anyone can also claim a spot, so the
+      // named guest count can't be used as a cap - only suggest a number
+      // once the link is off and these guests are genuinely the whole list.
+      const n = requiredGuestCount();
+      capacityInput.value = (!state.linkEnabled && n > 0) ? String(n) : '';
+    }
+
+    function updateParticipantsVisibility() {
+      // The shareable link (linkAccessRow) is always visible and never tied to
+      // this - named guests are an addition on top of it, not a replacement,
+      // so only the guest editor's own open/closed state lives here.
+      const hasGuests = guestList.children.length > 0;
+      const expanded = state.manualExpanded || hasGuests;
+      participantsExpanded.style.display = expanded ? 'flex' : 'none';
+      if (hasGuests) {
+        // Nothing to collapse away once real guests are listed - keep them visible.
+        inviteToggleBtn.style.display = 'none';
+      } else {
+        inviteToggleBtn.style.display = 'inline-flex';
+        inviteToggleBtn.textContent = expanded ? '− Hide' : '+ Invite specific people too';
+      }
+    }
+
+    function render() {
+      updateCapacitySuggestion();
+      const type = resolvedType();
+
+      // Status pill - always visible, always a plain readout, never a gate.
+      if (!state.intent) {
+        statusPill.textContent = 'Choose an option below';
+        statusPill.classList.remove('resolved');
+      } else if (state.intent === 'claim' && !state.mechanism) {
+        statusPill.textContent = 'Share availability: pick a format below';
+        statusPill.classList.remove('resolved');
+      } else {
+        statusPill.textContent = `This will be a ${TYPE_LABELS[type]}`;
+        statusPill.classList.add('resolved');
+      }
+
+      // Auto-fill the title only while it's empty or still holds our own
+      // previous suggestion - never overwrite something the user typed.
+      if (type && (eventNameInput.value.trim() === '' || eventNameInput.value.trim() === lastAutoTitle)) {
+        eventNameInput.value = DEFAULT_TITLES[type];
+        lastAutoTitle = DEFAULT_TITLES[type];
+      } else if (!type && eventNameInput.value.trim() === lastAutoTitle) {
+        // We've moved back to an unresolved state (e.g. switched intent or
+        // cleared the mechanism) - don't leave a stale auto-title behind
+        // that names a type we're no longer building.
+        eventNameInput.value = '';
+        lastAutoTitle = '';
+      }
+
+      intentCards.forEach((card) => {
+        const on = card.dataset.intent === state.intent;
+        card.classList.toggle('selected', on);
+        card.setAttribute('aria-checked', String(on));
+      });
+
+      participantsLabel.textContent = type === '1on1' ? 'Guest' : 'Participants';
+      guestSearch.placeholder = type === '1on1' ? 'Add guest (optional)' : 'Add guests (optional)';
+
+      // The link is never replaced by named guests, only ever added to - say so
+      // plainly so the two never read as an either/or choice.
+      const hasAnyGuests = guestList.children.length > 0;
+      linkAccessCopy.textContent = state.linkEnabled
+        ? (hasAnyGuests ? 'Anyone with the link can also join' : 'Anyone with the link can join')
+        : (hasAnyGuests ? 'Only your invited guests can join, link sharing is off' : 'Link sharing is off, add specific guests below or turn it back on');
+
+      postIntentSections.style.display = state.intent ? 'flex' : 'none';
+      if (!state.intent) return;
+
+      mechanismSection.style.display = state.intent === 'claim' ? 'flex' : 'none';
+      mechanismButtons.forEach((btn) => {
+        const on = btn.dataset.mechanism === state.mechanism;
+        btn.classList.toggle('active', on);
+        btn.setAttribute('aria-checked', String(on));
+      });
+
+      const showCapacity = state.intent === 'claim' && state.mechanism === 'specific';
+      capacityRow.style.display = showCapacity ? 'flex' : 'none';
+      if (showCapacity) {
+        const val = capacityInput.value.trim();
+        const n = requiredGuestCount();
+        if (state.capacityAuto) {
+          // Explain *why* the number is what it is instead of labeling it
+          // "auto", which said nothing on its own.
+          if (!state.linkEnabled && n > 0) {
+            capacityHint.textContent = n === 1
+              ? "Just for the one guest you've added, since the link is off."
+              : `Capped at your ${n} invited guests, since the link is off.`;
+          } else {
+            capacityHint.textContent = 'No limit, good for a public link or an open-ended group.';
+          }
+        } else {
+          capacityHint.textContent = val === '1'
+            ? 'Just one spot available.'
+            : val
+              ? `Up to ${val} people can grab a spot.`
+              : 'No limit, good for a public link or an open-ended group.';
+        }
+        // Nothing shown while we're picking the number for you; the moment
+        // a guest types their own value over it, offer a plain way back.
+        capacityAutoTag.textContent = state.capacityAuto ? '' : 'Use suggested number';
+        capacityAutoTag.style.display = state.capacityAuto ? 'none' : 'inline';
+      }
+
+      if (state.intent === 'converge' || (state.intent === 'claim' && state.mechanism)) {
+        const copy = BANNER_COPY[type];
+        bannerEl.style.display = 'flex';
+        bannerTitle.textContent = copy.title;
+        bannerText.textContent = copy.text;
+      } else {
+        bannerEl.style.display = 'none';
+      }
+
+      if (state.intent === 'converge' || (state.intent === 'claim' && state.mechanism === 'specific')) {
+        timesSection.style.display = 'block';
+        bookingSection.style.display = 'none';
+        pollTypeLabel.textContent = 'Proposed times';
+      } else if (state.intent === 'claim' && state.mechanism === 'rolling') {
+        timesSection.style.display = 'none';
+        bookingSection.style.display = 'block';
+      } else {
+        timesSection.style.display = 'none';
+        bookingSection.style.display = 'none';
+      }
+
+      Object.entries(advGroups).forEach(([key, el]) => {
+        if (el) el.style.display = key === type ? 'flex' : 'none';
+      });
+
+      createBtn.textContent = (type === 'group-poll' || type === '1on1') ? 'Create' : 'Publish';
+    }
+
+    intentCards.forEach((card) => {
+      card.addEventListener('click', () => {
+        state.intent = state.intent === card.dataset.intent ? null : card.dataset.intent;
+        state.mechanism = null;
+        render();
+      });
+    });
+
+    mechanismButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.mechanism = state.mechanism === btn.dataset.mechanism ? null : btn.dataset.mechanism;
+        render();
+      });
+    });
+
+    capacityInput.addEventListener('input', () => {
+      state.capacityAuto = false;
+      render();
+    });
+    capacityAutoTag.addEventListener('click', () => {
+      if (state.capacityAuto) return; // already auto: the badge isn't a button here
+      state.capacityAuto = true;
+      render();
+    });
+
+    inviteToggleBtn.addEventListener('click', () => {
+      state.manualExpanded = !state.manualExpanded;
+      updateParticipantsVisibility();
+    });
+
+    // ── Booking Page: day-of-week availability pills ──
+    document.querySelectorAll('.day-pill').forEach((pill) => {
+      pill.addEventListener('click', () => pill.classList.toggle('active'));
+    });
+
+    // ── Booking Page: duration dropdown (mirrors the group-poll one) ──
+    const bookingDurationWrap = document.getElementById('booking-duration-dropdown-wrap');
+    const bookingDurationBtn = document.getElementById('booking-duration-btn');
+    const bookingDurationMenu = document.getElementById('booking-duration-menu');
+    const bookingDurationLabel = document.getElementById('booking-duration-label');
+    bookingDurationBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      bookingDurationMenu.classList.toggle('open');
+    });
+    bookingDurationMenu.addEventListener('click', (e) => {
+      const item = e.target.closest('.dropdown-item');
+      if (!item) return;
+      bookingDurationLabel.textContent = item.dataset.duration;
+      bookingDurationMenu.querySelectorAll('.dropdown-item').forEach((i) => i.classList.toggle('selected', i === item));
+      bookingDurationMenu.classList.remove('open');
+    });
+    document.addEventListener('click', (e) => {
+      if (!bookingDurationWrap.contains(e.target)) bookingDurationMenu.classList.remove('open');
+    });
+
+    // ── Toggle switch interaction (delegated) ──
+    document.addEventListener('click', (e) => {
+      const sw = e.target.closest('.switch');
+      if (!sw) return;
+      const wasChecked = sw.getAttribute('aria-checked') === 'true';
+      const nowChecked = !wasChecked;
+      sw.setAttribute('aria-checked', String(nowChecked));
+      sw.classList.toggle('on', nowChecked);
+
+      const revealId = sw.dataset.reveals;
+      if (revealId) {
+        const sub = document.getElementById(revealId);
+        if (sub) sub.style.display = nowChecked ? 'block' : 'none';
+      }
+    });
+
+    // The link-access switch above also drives its own copy line ("can join"
+    // vs "can also join" vs "link sharing is off") through render(). This runs
+    // after the generic handler above, since both listen on document and
+    // registration order decides the order same-target listeners fire in.
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#link-access-switch')) return;
+      state.linkEnabled = linkAccessSwitch.getAttribute('aria-checked') === 'true';
+      render();
+    });
+
+    // ── Advanced options collapse ──
+    const advancedToggle = document.getElementById('advanced-toggle');
+    const advancedContent = document.getElementById('advanced-content');
+    const advancedChevron = document.getElementById('advanced-chevron');
+    advancedToggle.addEventListener('click', () => {
+      const isOpen = advancedContent.classList.toggle('open');
+      advancedChevron.classList.toggle('open', isOpen);
+    });
+
+    // ── Banner dismiss ──
+    document.getElementById('mode-banner-close').addEventListener('click', () => {
+      document.getElementById('mode-banner').style.display = 'none';
+    });
+
+    // ── Slot duration dropdown ──
+    const durationWrap = document.getElementById('duration-dropdown-wrap');
+    const durationBtn = document.getElementById('duration-btn');
+    const durationMenu = document.getElementById('duration-menu');
+    const durationLabel = document.getElementById('duration-label');
+
+    durationBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      durationMenu.classList.toggle('open');
+    });
+
+    durationMenu.addEventListener('click', (e) => {
+      const item = e.target.closest('.dropdown-item');
+      if (!item) return;
+      durationLabel.textContent = item.dataset.duration;
+      durationMenu.querySelectorAll('.dropdown-item').forEach((i) => i.classList.toggle('selected', i === item));
+      durationMenu.classList.remove('open');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!durationWrap.contains(e.target)) durationMenu.classList.remove('open');
+    });
+
+    // ── Participants: add a guest by typing + Enter ──
+    const AVATAR_COLORS = ['#64B5F6', '#81C784', '#FFB74D', '#BA68C8', '#4DB6AC', '#F06292'];
+    let avatarColorIdx = 0;
+    const guestList = document.getElementById('guest-list');
+    const guestSearch = document.getElementById('guest-search');
+
+    function initialsFor(value) {
+      const name = value.split('@')[0].replace(/[._]+/g, ' ').trim();
+      const parts = name.split(/\s+/).filter(Boolean);
+      if (parts.length === 0) return '?';
+      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+
+    function addGuest(value) {
+      const color = AVATAR_COLORS[avatarColorIdx % AVATAR_COLORS.length];
+      avatarColorIdx++;
+      const row = document.createElement('div');
+      row.className = 'guest-row';
+      row.innerHTML = `
+        <div class="avatar" style="background-color:${color};">${initialsFor(value)}</div>
+        <div class="guest-info">
+          <p class="guest-name">${value}</p>
+        </div>
+        <div class="guest-actions">
+          <button type="button" class="icon-btn" title="View details"><svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg></button>
+          <button type="button" class="icon-btn make-optional-btn" title="Make optional"><svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" x2="19" y1="8" y2="14"></line><line x1="22" x2="16" y1="11" y2="11"></line></svg></button>
+          <button type="button" class="icon-btn remove-guest-btn" title="Remove guest"><svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+        </div>`;
+      guestList.appendChild(row);
+      // A fresh guest always counts as "required" until marked optional, so
+      // this is the moment the collapse state, the capacity suggestion, and
+      // the status pill (1:1 vs. Sign-up Sheet) all need to catch up.
+      updateParticipantsVisibility();
+      render();
+    }
+
+    guestSearch.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      const value = guestSearch.value.trim();
+      if (!value) return;
+      addGuest(value);
+      guestSearch.value = '';
+    });
+
+    document.addEventListener('click', (e) => {
+      const removeBtn = e.target.closest('.remove-guest-btn');
+      if (removeBtn) {
+        removeBtn.closest('.guest-row').remove();
+        updateParticipantsVisibility();
+        render();
+        return;
+      }
+
+      // "Make optional" - an optional guest doesn't count toward the
+      // required-guest-count that drives the capacity suggestion, since
+      // CC'ing someone shouldn't silently turn a 1:1 into a Sign-up Sheet.
+      const optionalBtn = e.target.closest('.make-optional-btn');
+      if (optionalBtn) {
+        const row = optionalBtn.closest('.guest-row');
+        const nowOptional = !row.classList.contains('is-optional');
+        row.classList.toggle('is-optional', nowOptional);
+        optionalBtn.title = nowOptional ? 'Make required' : 'Make optional';
+        let tag = row.querySelector('.optional-tag');
+        if (nowOptional && !tag) {
+          tag = document.createElement('p');
+          tag.className = 'optional-tag';
+          tag.textContent = 'Optional';
+          row.querySelector('.guest-info').appendChild(tag);
+        } else if (!nowOptional && tag) {
+          tag.remove();
+        }
+        render();
+      }
+    });
+
+    // ── Time slots: add / remove custom rows ──
+    const WEEKDAY_LONG = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    function formatDateLabel(d) {
+      return `${WEEKDAY_LONG[d.getDay()]}, ${MONTH_SHORT[d.getMonth()]} ${d.getDate()}`;
+    }
+
+    function formatTimeOfDay(halfIdx) {
+      const totalMinutes = halfIdx * 30;
+      let hour = Math.floor(totalMinutes / 60);
+      const min = totalMinutes % 60;
+      const period = hour >= 12 ? 'pm' : 'am';
+      hour = hour % 12; if (hour === 0) hour = 12;
+      return `${hour}:${String(min).padStart(2, '0')} ${period}`;
+    }
+
+    function createTimeRow() {
+      const row = document.createElement('div');
+      row.className = 'time-row';
+      row.innerHTML = `
+        <span class="checkbox checked"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg></span>
+        <div class="time-row-body">
+          <div class="time-inputs">
+            <input class="input-time" type="text" readonly value="9:00 am">
+            <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+            <input class="input-time" type="text" readonly value="9:30 am">
+          </div>
+          <button type="button" class="select-btn full">
+            <svg class="icon-xs" style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect height="18" rx="2" width="18" x="3" y="4"></rect><path d="M3 10h18"></path></svg>
+            <span style="flex:1;text-align:left;">${formatDateLabel(new Date())}</span>
+          </button>
+        </div>
+        <button type="button" class="icon-btn remove-time-btn" title="Remove time"><svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>`;
+      return row;
+    }
+
+    const timeRowsContainer = document.getElementById('time-rows');
+    document.getElementById('add-time-btn').addEventListener('click', () => {
+      timeRowsContainer.appendChild(createTimeRow());
+    });
+
+    document.addEventListener('click', (e) => {
+      const removeBtn = e.target.closest('.remove-time-btn');
+      if (!removeBtn) return;
+      removeBtn.closest('.time-row').remove();
+    });
+
+    // ── Custom time row: time-of-day picker (shared popover) ──
+    const timePopover = document.getElementById('time-value-popover');
+    const timePopoverList = document.getElementById('time-popover-list');
+    let timePopoverTarget = null;
+    for (let half = 0; half < 48; half++) {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'time-popover-item';
+      item.textContent = formatTimeOfDay(half);
+      item.addEventListener('click', () => {
+        if (timePopoverTarget) timePopoverTarget.value = item.textContent;
+        closeTimePopover();
+      });
+      timePopoverList.appendChild(item);
+    }
+
+    function openTimePopover(input) {
+      timePopoverTarget = input;
+      timePopoverList.querySelectorAll('.time-popover-item').forEach((item) => {
+        item.classList.toggle('selected', item.textContent === input.value);
+      });
+      const rect = input.getBoundingClientRect();
+      timePopover.style.top = `${rect.bottom + 4}px`;
+      timePopover.style.left = `${rect.left}px`;
+      timePopover.classList.add('open');
+      const selected = timePopoverList.querySelector('.selected');
+      if (selected) selected.scrollIntoView({ block: 'center' });
+    }
+
+    function closeTimePopover() {
+      timePopover.classList.remove('open');
+      timePopoverTarget = null;
+    }
+
+    // ── Custom time row: date picker (shared popover) ──
+    const datePopover = document.getElementById('date-popover');
+    const dpMonthLabel = document.getElementById('dp-month-label');
+    const dpGrid = document.getElementById('dp-grid');
+    let datePopoverTarget = null;
+    let dpYear, dpMonth;
+
+    function renderDatePicker() {
+      dpMonthLabel.textContent = `${MONTH_SHORT[dpMonth]} ${dpYear}`;
+      dpGrid.innerHTML = '';
+      WEEKDAY_LONG.forEach((w) => {
+        const el = document.createElement('div');
+        el.className = 'dp-weekday';
+        el.textContent = w[0];
+        dpGrid.appendChild(el);
+      });
+      const firstDow = new Date(dpYear, dpMonth, 1).getDay();
+      const numDays = new Date(dpYear, dpMonth + 1, 0).getDate();
+      for (let i = 0; i < firstDow; i++) dpGrid.appendChild(document.createElement('div'));
+      const today = new Date();
+      for (let day = 1; day <= numDays; day++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'dp-day';
+        btn.textContent = day;
+        if (today.getFullYear() === dpYear && today.getMonth() === dpMonth && today.getDate() === day) {
+          btn.classList.add('today');
+        }
+        btn.addEventListener('click', () => {
+          const picked = new Date(dpYear, dpMonth, day);
+          if (datePopoverTarget) datePopoverTarget.textContent = formatDateLabel(picked);
+          closeDatePicker();
+        });
+        dpGrid.appendChild(btn);
+      }
+    }
+
+    function openDatePicker(labelSpan) {
+      datePopoverTarget = labelSpan;
+      const now = new Date();
+      dpYear = now.getFullYear();
+      dpMonth = now.getMonth();
+      renderDatePicker();
+      const rect = labelSpan.closest('.select-btn').getBoundingClientRect();
+      datePopover.style.top = `${rect.bottom + 4}px`;
+      datePopover.style.left = `${rect.left}px`;
+      datePopover.classList.add('open');
+    }
+
+    function closeDatePicker() {
+      datePopover.classList.remove('open');
+      datePopoverTarget = null;
+    }
+
+    document.getElementById('dp-prev').addEventListener('click', (e) => {
+      e.stopPropagation();
+      dpMonth--; if (dpMonth < 0) { dpMonth = 11; dpYear--; }
+      renderDatePicker();
+    });
+    document.getElementById('dp-next').addEventListener('click', (e) => {
+      e.stopPropagation();
+      dpMonth++; if (dpMonth > 11) { dpMonth = 0; dpYear++; }
+      renderDatePicker();
+    });
+
+    document.addEventListener('click', (e) => {
+      const timeInput = e.target.closest('.time-row .input-time');
+      if (timeInput) { e.stopPropagation(); openTimePopover(timeInput); return; }
+      if (!timePopover.contains(e.target)) closeTimePopover();
+
+      const dateBtn = e.target.closest('.time-row .select-btn.full');
+      if (dateBtn) { e.stopPropagation(); openDatePicker(dateBtn.querySelector('span')); return; }
+      if (!datePopover.contains(e.target)) closeDatePicker();
+    });
+
+    // ── Proposed times: a calendar grid is the source of truth; the list
+    // view is just a grouped, removable read-out of the same selection.
+    // (We don't show "everyone's free" here - participants haven't been
+    // asked yet, so there's no availability to know.)
+    const GRID_DAYS = [
+      { key: '2026-02-10', label: 'Mon', date: 'Feb 10' },
+      { key: '2026-02-11', label: 'Tue', date: 'Feb 11' },
+      { key: '2026-02-12', label: 'Wed', date: 'Feb 12' },
+      { key: '2026-02-13', label: 'Thu', date: 'Feb 13' },
+      { key: '2026-02-14', label: 'Fri', date: 'Feb 14' },
+      { key: '2026-02-15', label: 'Sat', date: 'Feb 15' },
+    ];
+    const GRID_START_HOUR = 8;
+    const GRID_END_HOUR = 18;
+    const GRID_HALF_COUNT = (GRID_END_HOUR - GRID_START_HOUR) * 2;
+
+    // Starts empty - nothing is proposed until you pick times on the grid,
+    // add a custom time, or use "Suggest more times".
+    const selectedSlots = new Set();
+
+    function fmtHalf(halfIdx) {
+      const totalMinutes = GRID_START_HOUR * 60 + halfIdx * 30;
+      let hour = Math.floor(totalMinutes / 60);
+      const min = totalMinutes % 60;
+      const period = hour >= 12 ? 'PM' : 'AM';
+      hour = hour % 12; if (hour === 0) hour = 12;
+      return `${hour}:${String(min).padStart(2, '0')} ${period}`;
+    }
+
+    function dayLabel(dayKey) {
+      const day = GRID_DAYS.find((d) => d.key === dayKey);
+      return day ? `${day.label}, ${day.date}` : dayKey;
+    }
+
+    // Group half-hour keys into contiguous per-day blocks (mirrors the real
+    // group-poll grid's slot grouping)
+    function groupSlots(set) {
+      const byDay = new Map();
+      for (const key of set) {
+        const idx = key.lastIndexOf('-');
+        const dayKey = key.slice(0, idx);
+        const half = parseInt(key.slice(idx + 1), 10);
+        if (!byDay.has(dayKey)) byDay.set(dayKey, []);
+        byDay.get(dayKey).push(half);
+      }
+      const order = GRID_DAYS.map((d) => d.key);
+      const days = [...byDay.keys()].sort((a, b) => order.indexOf(a) - order.indexOf(b));
+      return days.map((dayKey) => {
+        const idxs = byDay.get(dayKey).sort((a, b) => a - b);
+        const blocks = [];
+        let start = idxs[0], end = idxs[0];
+        for (let i = 1; i < idxs.length; i++) {
+          if (idxs[i] === end + 1) { end = idxs[i]; }
+          else { blocks.push([start, end]); start = idxs[i]; end = idxs[i]; }
+        }
+        blocks.push([start, end]);
+        return { dayKey, blocks };
+      });
+    }
+
+    const optionsList = document.getElementById('options-list');
+
+    function renderSlotList() {
+      optionsList.innerHTML = '';
+      const groups = groupSlots(selectedSlots);
+      if (groups.length === 0) {
+        optionsList.innerHTML = '<p class="slot-empty">No times proposed yet. Pick some on the calendar grid or add a custom time below.</p>';
+        return;
+      }
+      groups.forEach((group) => {
+        const dayEl = document.createElement('p');
+        dayEl.className = 'slot-day-label';
+        dayEl.textContent = dayLabel(group.dayKey);
+        optionsList.appendChild(dayEl);
+
+        group.blocks.forEach(([start, end]) => {
+          const row = document.createElement('div');
+          row.className = 'slot-chip-row';
+          row.innerHTML = `
+            <div class="slot-chip">
+              <span class="dot"></span>
+              <span class="slot-chip-time">${fmtHalf(start)} → ${fmtHalf(end + 1)}</span>
+            </div>
+            <button type="button" class="icon-btn remove-slot-btn" title="Remove time">
+              <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+            </button>`;
+          row.dataset.dayKey = group.dayKey;
+          row.dataset.start = start;
+          row.dataset.end = end;
+          optionsList.appendChild(row);
+        });
+      });
+    }
+
+    optionsList.addEventListener('click', (e) => {
+      const btn = e.target.closest('.remove-slot-btn');
+      if (!btn) return;
+      const row = btn.closest('.slot-chip-row');
+      const { dayKey, start, end } = row.dataset;
+      for (let i = Number(start); i <= Number(end); i++) selectedSlots.delete(`${dayKey}-${i}`);
+      renderSlotList();
+      syncGridSelection();
+    });
+
+    // ── Calendar grid ──
+    const gridTable = document.getElementById('grid-table');
+    gridTable.style.gridTemplateColumns = `56px repeat(${GRID_DAYS.length}, 1fr)`;
+    gridTable.innerHTML = ''; // this file was saved with a static copy of the grid already
+                              // baked in from a live session - clear it before re-rendering,
+                              // otherwise the header/cells render twice (pre-existing bug).
+
+    gridTable.appendChild(document.createElement('div')); // blank corner cell
+    GRID_DAYS.forEach((day) => {
+      const head = document.createElement('div');
+      head.className = 'grid-head-cell';
+      head.textContent = `${day.label} ${day.date}`;
+      gridTable.appendChild(head);
+    });
+
+    for (let half = 0; half < GRID_HALF_COUNT; half++) {
+      const timeCell = document.createElement('div');
+      timeCell.className = 'grid-time-cell';
+      if (half % 2 === 0) timeCell.textContent = fmtHalf(half);
+      gridTable.appendChild(timeCell);
+
+      GRID_DAYS.forEach((day) => {
+        const cell = document.createElement('div');
+        cell.className = 'grid-cell' + (half % 2 === 0 ? ' hour-start' : '');
+        cell.dataset.dayKey = day.key;
+        cell.dataset.half = half;
+        if (selectedSlots.has(`${day.key}-${half}`)) cell.classList.add('selected');
+        gridTable.appendChild(cell);
+      });
+    }
+
+    function syncGridSelection() {
+      gridTable.querySelectorAll('.grid-cell').forEach((cell) => {
+        const key = `${cell.dataset.dayKey}-${cell.dataset.half}`;
+        cell.classList.toggle('selected', selectedSlots.has(key));
+      });
+    }
+
+    gridTable.addEventListener('click', (e) => {
+      const cell = e.target.closest('.grid-cell');
+      if (!cell) return;
+      const key = `${cell.dataset.dayKey}-${cell.dataset.half}`;
+      if (selectedSlots.has(key)) selectedSlots.delete(key);
+      else selectedSlots.add(key);
+      cell.classList.toggle('selected');
+      renderSlotList();
+    });
+
+    // ── Suggest more times: add the next free candidate slot ──
+    const SUGGESTIONS = [
+      { day: '2026-02-14', start: 11, end: 12 }, // Fri, Feb 14 · 1:30 → 2:30 PM
+      { day: '2026-02-10', start: 2, end: 3 },   // Mon, Feb 10 · 9:00 → 10:00 AM
+      { day: '2026-02-11', start: 12, end: 13 }, // Tue, Feb 11 · 2:00 → 3:00 PM
+      { day: '2026-02-15', start: 6, end: 7 },   // Sat, Feb 15 · 11:00 → 12:00 PM
+    ];
+    document.getElementById('suggest-times-btn').addEventListener('click', () => {
+      const next = SUGGESTIONS.find((s) => !selectedSlots.has(`${s.day}-${s.start}`));
+      if (!next) return;
+      for (let i = next.start; i <= next.end; i++) selectedSlots.add(`${next.day}-${i}`);
+      renderSlotList();
+      syncGridSelection();
+    });
+
+    // ── View switcher: list <-> calendar grid ──
+    const listView = document.getElementById('list-view');
+    const gridView = document.getElementById('grid-view');
+    const viewListBtn = document.getElementById('view-list-btn');
+    const viewGridBtn = document.getElementById('view-grid-btn');
+
+    function setView(view) {
+      const isGrid = view === 'grid';
+      listView.style.display = isGrid ? 'none' : 'block';
+      gridView.style.display = isGrid ? 'block' : 'none';
+      viewListBtn.classList.toggle('active', !isGrid);
+      viewGridBtn.classList.toggle('active', isGrid);
+      if (isGrid) syncGridSelection(); else renderSlotList();
+    }
+    viewListBtn.addEventListener('click', () => setView('list'));
+    viewGridBtn.addEventListener('click', () => setView('grid'));
+
+    setView('grid');
+    updateParticipantsVisibility();
+    render();
+  </script>
+
+</body>
+</html>
