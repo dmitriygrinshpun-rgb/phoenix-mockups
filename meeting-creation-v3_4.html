@@ -238,6 +238,12 @@
   }
   .dropdown-item:hover { background: var(--hover); }
   .dropdown-item.selected { font-weight: 600; color: var(--primary-dark); background: var(--primary-tint); }
+  .dropdown-divider { height: 1px; background: var(--border-soft); margin: 4px 2px; }
+  .duration-custom-form { display: flex; align-items: center; gap: 6px; padding: 6px 8px 4px; }
+  .duration-custom-inputs { display: flex; align-items: center; gap: 4px; }
+  .duration-custom-inputs .input-number { width: 44px; height: 28px; padding: 0 6px; text-align: center; }
+  .duration-custom-inputs span { font-size: 12px; color: var(--text-muted); }
+  .duration-custom-form .btn-primary { height: 28px; padding: 0 12px; font-size: 12px; margin-left: auto; }
 
   .view-toggle { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; flex-shrink: 0; }
   .view-toggle-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: background-color .15s, color .15s; }
@@ -502,12 +508,6 @@
   /* Capacity: "how many people can end up with a spot", optional, auto-suggested */
   .capacity-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .capacity-input { width: 140px; }
-  /* Shown only once someone overrides the suggested number, as a plain way back. */
-  .capacity-auto-tag {
-    font-size: 12px; font-weight: 500; border-radius: 999px; border: none;
-    background: none; font-family: inherit; color: var(--primary); padding: 4px 2px; cursor: pointer;
-  }
-  .capacity-auto-tag:hover { color: var(--primary-dark); text-decoration: underline; }
 
   .optional-tag { font-size: 11px; color: var(--text-muted); font-weight: 500; }
   .guest-row.is-optional .guest-name { color: var(--text-soft); }
@@ -534,7 +534,6 @@
     color: var(--primary);
     white-space: nowrap;
   }
-  .invite-toggle-btn:hover { color: var(--primary-dark); }
   #participants-expanded { display: flex; flex-direction: column; gap: 8px; }
 
   /* Booking page availability */
@@ -615,10 +614,11 @@
           </div>
 
           <!-- Named guests: an addition on top of the link above, not an
-               alternative to it. -->
-          <button type="button" class="invite-toggle-btn" id="invite-toggle-btn">+ Invite specific people too</button>
+               alternative to it. Always expanded - no need to hide it once
+               shown. -->
+          <span class="invite-toggle-btn">+ Invite specific people too</span>
 
-          <div id="participants-expanded" style="display:none;">
+          <div id="participants-expanded">
             <div class="search-wrap">
               <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg>
               <input id="guest-search" class="input-sm with-icon" type="text" placeholder="Add guests (optional)">
@@ -641,13 +641,13 @@
             <button type="button" class="mechanism-btn" data-mechanism="specific" role="radio" aria-checked="false">I have specific times in mind</button>
             <button type="button" class="mechanism-btn" data-mechanism="rolling" role="radio" aria-checked="false">Open up my regular hours</button>
           </div>
+          <p class="helper-text" id="mechanism-hint"></p>
 
           <!-- Capacity: optional, auto-suggested once exactly one required
                guest is named; never a forced question. -->
           <div class="capacity-row" id="capacity-row" style="display:none;">
             <label style="font-size:13px; font-weight:500; color:var(--text-soft);" for="capacity-input">Spots available</label>
-            <input id="capacity-input" class="input-sm capacity-input" type="number" min="1" placeholder="No limit">
-            <button type="button" class="capacity-auto-tag" id="capacity-auto-tag"></button>
+            <input id="capacity-input" class="input-sm capacity-input" type="number" min="0" placeholder="No limit">
             <p class="helper-text" id="capacity-hint" style="width:100%;"></p>
           </div>
         </div>
@@ -691,6 +691,17 @@
                   <button type="button" class="dropdown-item selected" data-duration="1 hour">1 hour</button>
                   <button type="button" class="dropdown-item" data-duration="1.5 hours">1.5 hours</button>
                   <button type="button" class="dropdown-item" data-duration="2 hours">2 hours</button>
+                  <div class="dropdown-divider"></div>
+                  <button type="button" class="dropdown-item" id="duration-custom-item" data-duration="custom">Custom&hellip;</button>
+                  <div class="duration-custom-form" id="duration-custom-form" style="display:none;">
+                    <div class="duration-custom-inputs">
+                      <input type="number" min="0" max="23" id="duration-custom-hours" class="input-number" placeholder="0">
+                      <span>h</span>
+                      <input type="number" min="0" max="59" step="5" id="duration-custom-minutes" class="input-number" placeholder="0">
+                      <span>m</span>
+                    </div>
+                    <button type="button" class="btn-primary" id="duration-custom-apply">Set</button>
+                  </div>
                 </div>
               </div>
               <div class="view-toggle">
@@ -823,9 +834,28 @@
 
             <!-- Group poll advanced options -->
             <div class="adv-group" id="advanced-group-poll" style="display: flex;">
+              <div class="adv-toggle-row">
+                <div>
+                  <div class="adv-toggle-title">Add your logo and brand colors</div>
+                  <div class="adv-toggle-desc">Participants see your brand, not ours.</div>
+                </div>
+                <button type="button" class="switch"><span class="switch-thumb"></span></button>
+              </div>
+
+              <div class="adv-toggle-row">
+                <div>
+                  <div class="adv-toggle-title">Send automatic reminders</div>
+                  <div class="adv-toggle-desc">We'll email invited participants who don't respond.</div>
+                </div>
+                <button type="button" class="switch on"><span class="switch-thumb"></span></button>
+              </div>
+
               <div>
                 <div class="adv-toggle-row">
-                  <div class="adv-toggle-title">Set the voting deadline</div>
+                  <div>
+                    <div class="adv-toggle-title">Set a deadline</div>
+                    <div class="adv-toggle-desc">Motivate participants to respond sooner. After the deadline, we won't accept any responses.</div>
+                  </div>
                   <button type="button" class="switch" data-reveals="voting-deadline-sub"><span class="switch-thumb"></span></button>
                 </div>
                 <div class="adv-toggle-sub" id="voting-deadline-sub" style="display:none; margin-top:10px;">
@@ -836,25 +866,33 @@
                 </div>
               </div>
 
-              <div>
-                <div class="adv-toggle-row">
-                  <div class="adv-toggle-title">Max choices per participant</div>
-                  <button type="button" class="switch" data-reveals="max-choices-sub"><span class="switch-thumb"></span></button>
+              <div class="adv-toggle-row">
+                <div>
+                  <div class="adv-toggle-title">Hide participant list</div>
+                  <div class="adv-toggle-desc">Only you will be able to see participants' personal details.</div>
                 </div>
-                <div class="adv-toggle-sub" id="max-choices-sub" style="display:none; margin-top:10px;">
-                  <button type="button" class="select-btn w-fixed">
-                    <span>3</span>
-                    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
-                  </button>
-                </div>
+                <button type="button" class="switch"><span class="switch-thumb"></span></button>
               </div>
 
               <div class="adv-toggle-row">
                 <div>
-                  <div class="adv-toggle-title">Automatic reminders</div>
-                  <div class="adv-toggle-desc">Email invited participants who don't respond</div>
+                  <div class="adv-toggle-title">Send invite from Doodle</div>
+                  <div class="adv-toggle-desc">Email your event invitation directly from Doodle to up to 1,000 participants.</div>
                 </div>
-                <button type="button" class="switch on"><span class="switch-thumb"></span></button>
+                <button type="button" class="switch"><span class="switch-thumb"></span></button>
+              </div>
+
+              <div>
+                <div class="adv-toggle-row">
+                  <div>
+                    <div class="adv-toggle-title">Limit how many participants can select a time</div>
+                    <div class="adv-toggle-desc">We'll remove a time when it hits the participant limit.</div>
+                  </div>
+                  <button type="button" class="switch" data-reveals="slot-capacity-sub"><span class="switch-thumb"></span></button>
+                </div>
+                <div class="adv-toggle-sub" id="slot-capacity-sub" style="display:none; margin-top:10px;">
+                  <input class="input-number" type="number" min="1" value="1" placeholder="1">
+                </div>
               </div>
             </div>
 
@@ -1078,9 +1116,9 @@
     const intentToggleButtons = document.querySelectorAll('#intent-toggle .mechanism-btn');
     const mechanismSection = document.getElementById('mechanism-section');
     const mechanismButtons = document.querySelectorAll('#mechanism-section .mechanism-btn');
+    const mechanismHint = document.getElementById('mechanism-hint');
     const capacityRow = document.getElementById('capacity-row');
     const capacityInput = document.getElementById('capacity-input');
-    const capacityAutoTag = document.getElementById('capacity-auto-tag');
     const capacityHint = document.getElementById('capacity-hint');
     const bannerEl = document.getElementById('mode-banner');
     const bannerTitle = document.getElementById('mode-banner-title');
@@ -1088,8 +1126,6 @@
     const participantsLabel = document.getElementById('participants-label');
     const linkAccessCopy = document.getElementById('link-access-copy');
     const linkAccessSwitch = document.getElementById('link-access-switch');
-    const inviteToggleBtn = document.getElementById('invite-toggle-btn');
-    const participantsExpanded = document.getElementById('participants-expanded');
     const pollTypeLabel = document.getElementById('poll-type-label');
     const timesSection = document.getElementById('times-section');
     const bookingSection = document.getElementById('booking-availability-section');
@@ -1108,11 +1144,19 @@
       'sign-up': { title: 'Sign-up sheet', text: 'Anyone who gets this (invited, or via a link) can claim one of the times below.' },
       'booking-page': { title: 'Booking page', text: 'Anyone with the link can book an open slot from the availability below.' },
     };
+    // The two mechanism pills look like two flavors of the same thing but
+    // aren't - "rolling" turns this into a standing, reusable Booking Page
+    // tied to recurring availability, not just a different way to propose
+    // times for this one meeting. Say so before anyone commits to it.
+    const MECHANISM_HINTS = {
+      specific: 'People pick from the exact times you propose below, just for this one meeting.',
+      rolling: "This becomes a link people can book from anytime using your regular hours, it's not limited to this one meeting.",
+    };
 
     // Solo users default straight into Group Poll - the majority case - so
     // intent starts resolved rather than null. (Team/enterprise defaulting
     // is a separate, later decision and isn't handled here.)
-    const state = { intent: 'converge', mechanism: null, manualExpanded: false, capacityAuto: true, linkEnabled: true };
+    const state = { intent: 'converge', mechanism: null, linkEnabled: true };
     let lastAutoTitle = '';
 
     function requiredGuestCount() {
@@ -1120,42 +1164,21 @@
     }
 
     // The one and only place "which of the four things is this" gets decided.
+    // 1:1 is about *who* can attend (exactly one named guest, with the link
+    // off so nobody else could join), not about "Spots available" - a
+    // sign-up sheet capped at 1 spot is still a sign-up sheet, since other
+    // people can still book the other times on offer.
     function resolvedType() {
       if (state.intent === 'converge') return 'group-poll';
       if (state.intent === 'claim' && state.mechanism === 'specific') {
-        return capacityInput.value.trim() === '1' ? '1on1' : 'sign-up';
+        const isExclusiveToOneGuest = !state.linkEnabled && requiredGuestCount() === 1;
+        return isExclusiveToOneGuest ? '1on1' : 'sign-up';
       }
       if (state.intent === 'claim' && state.mechanism === 'rolling') return 'booking-page';
       return null; // not enough answered yet
     }
 
-    function updateCapacitySuggestion() {
-      if (!state.capacityAuto) return;
-      // A link that's still on means anyone can also claim a spot, so the
-      // named guest count can't be used as a cap - only suggest a number
-      // once the link is off and these guests are genuinely the whole list.
-      const n = requiredGuestCount();
-      capacityInput.value = (!state.linkEnabled && n > 0) ? String(n) : '';
-    }
-
-    function updateParticipantsVisibility() {
-      // The shareable link (linkAccessRow) is always visible and never tied to
-      // this - named guests are an addition on top of it, not a replacement,
-      // so only the guest editor's own open/closed state lives here.
-      const hasGuests = guestList.children.length > 0;
-      const expanded = state.manualExpanded || hasGuests;
-      participantsExpanded.style.display = expanded ? 'flex' : 'none';
-      if (hasGuests) {
-        // Nothing to collapse away once real guests are listed - keep them visible.
-        inviteToggleBtn.style.display = 'none';
-      } else {
-        inviteToggleBtn.style.display = 'inline-flex';
-        inviteToggleBtn.textContent = expanded ? '− Hide' : '+ Invite specific people too';
-      }
-    }
-
     function render() {
-      updateCapacitySuggestion();
       const type = resolvedType();
 
       // Status pill - always visible, always a plain readout, never a gate.
@@ -1204,33 +1227,20 @@
         btn.classList.toggle('active', on);
         btn.setAttribute('aria-checked', String(on));
       });
+      mechanismHint.textContent = state.mechanism ? MECHANISM_HINTS[state.mechanism] : '';
 
       const showCapacity = state.intent === 'claim' && state.mechanism === 'specific';
       capacityRow.style.display = showCapacity ? 'flex' : 'none';
       if (showCapacity) {
+        // No limit by default - this is never auto-suggested from the guest
+        // list, since "Spots available" is independent of who's named (see
+        // resolvedType() above).
         const val = capacityInput.value.trim();
-        const n = requiredGuestCount();
-        if (state.capacityAuto) {
-          // Explain *why* the number is what it is instead of labeling it
-          // "auto", which said nothing on its own.
-          if (!state.linkEnabled && n > 0) {
-            capacityHint.textContent = n === 1
-              ? "Just for the one guest you've added, since the link is off."
-              : `Capped at your ${n} invited guests, since the link is off.`;
-          } else {
-            capacityHint.textContent = 'No limit, good for a public link or an open-ended group.';
-          }
-        } else {
-          capacityHint.textContent = val === '1'
-            ? 'Just one spot available.'
-            : val
-              ? `Up to ${val} people can grab a spot.`
-              : 'No limit, good for a public link or an open-ended group.';
-        }
-        // Nothing shown while we're picking the number for you; the moment
-        // a guest types their own value over it, offer a plain way back.
-        capacityAutoTag.textContent = state.capacityAuto ? '' : 'Use suggested number';
-        capacityAutoTag.style.display = state.capacityAuto ? 'none' : 'inline';
+        capacityHint.textContent = val === '1'
+          ? 'Just one spot available.'
+          : val
+            ? `Up to ${val} people in total can grab a spot, across every time below.`
+            : 'No limit, good for a public link or an open-ended group.';
       }
 
       if (state.intent === 'converge' || (state.intent === 'claim' && state.mechanism)) {
@@ -1283,18 +1293,11 @@
     });
 
     capacityInput.addEventListener('input', () => {
-      state.capacityAuto = false;
+      // 0 (typed, or reached via the down arrow from 1) isn't a real
+      // capacity - treat it the same as empty, i.e. no limit.
+      const n = parseInt(capacityInput.value, 10);
+      if (!isNaN(n) && n <= 0) capacityInput.value = '';
       render();
-    });
-    capacityAutoTag.addEventListener('click', () => {
-      if (state.capacityAuto) return; // already auto: the badge isn't a button here
-      state.capacityAuto = true;
-      render();
-    });
-
-    inviteToggleBtn.addEventListener('click', () => {
-      state.manualExpanded = !state.manualExpanded;
-      updateParticipantsVisibility();
     });
 
     // ── Booking Page: day-of-week availability pills ──
@@ -1362,11 +1365,29 @@
       document.getElementById('mode-banner').style.display = 'none';
     });
 
-    // ── Slot duration dropdown ──
+    // ── Slot duration dropdown (with a custom h/m entry for Group Poll) ──
     const durationWrap = document.getElementById('duration-dropdown-wrap');
     const durationBtn = document.getElementById('duration-btn');
     const durationMenu = document.getElementById('duration-menu');
     const durationLabel = document.getElementById('duration-label');
+    const durationCustomItem = document.getElementById('duration-custom-item');
+    const durationCustomForm = document.getElementById('duration-custom-form');
+    const durationCustomHours = document.getElementById('duration-custom-hours');
+    const durationCustomMinutes = document.getElementById('duration-custom-minutes');
+    const durationCustomApply = document.getElementById('duration-custom-apply');
+
+    function formatCustomDuration(hours, minutes) {
+      const parts = [];
+      if (hours === 1) parts.push('1 hour');
+      else if (hours > 1) parts.push(`${hours} hours`);
+      if (minutes > 0) parts.push(`${minutes} min`);
+      return parts.join(' ') || '0 min';
+    }
+
+    function closeDurationMenu() {
+      durationMenu.classList.remove('open');
+      durationCustomForm.style.display = 'none';
+    }
 
     durationBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1376,13 +1397,37 @@
     durationMenu.addEventListener('click', (e) => {
       const item = e.target.closest('.dropdown-item');
       if (!item) return;
+      if (item === durationCustomItem) {
+        // Reveal the custom entry instead of selecting immediately - this
+        // item isn't "chosen" until Set is pressed.
+        durationCustomForm.style.display = durationCustomForm.style.display === 'none' ? 'flex' : 'none';
+        if (durationCustomForm.style.display === 'flex') durationCustomHours.focus();
+        return;
+      }
       durationLabel.textContent = item.dataset.duration;
       durationMenu.querySelectorAll('.dropdown-item').forEach((i) => i.classList.toggle('selected', i === item));
-      durationMenu.classList.remove('open');
+      closeDurationMenu();
+    });
+
+    durationCustomApply.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const hours = Math.max(0, parseInt(durationCustomHours.value, 10) || 0);
+      const minutes = Math.max(0, parseInt(durationCustomMinutes.value, 10) || 0);
+      if (hours === 0 && minutes === 0) return;
+      durationLabel.textContent = formatCustomDuration(hours, minutes);
+      durationCustomItem.textContent = `Custom (${formatCustomDuration(hours, minutes)})`;
+      durationMenu.querySelectorAll('.dropdown-item').forEach((i) => i.classList.toggle('selected', i === durationCustomItem));
+      closeDurationMenu();
+    });
+
+    [durationCustomHours, durationCustomMinutes].forEach((input) => {
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') durationCustomApply.click();
+      });
     });
 
     document.addEventListener('click', (e) => {
-      if (!durationWrap.contains(e.target)) durationMenu.classList.remove('open');
+      if (!durationWrap.contains(e.target)) closeDurationMenu();
     });
 
     // ── Participants: add a guest by typing + Enter ──
@@ -1416,9 +1461,8 @@
         </div>`;
       guestList.appendChild(row);
       // A fresh guest always counts as "required" until marked optional, so
-      // this is the moment the collapse state, the capacity suggestion, and
-      // the status pill (1:1 vs. Sign-up Sheet) all need to catch up.
-      updateParticipantsVisibility();
+      // this is the moment the capacity suggestion and the status pill
+      // (1:1 vs. Sign-up Sheet) need to catch up.
       render();
     }
 
@@ -1434,7 +1478,6 @@
       const removeBtn = e.target.closest('.remove-guest-btn');
       if (removeBtn) {
         removeBtn.closest('.guest-row').remove();
-        updateParticipantsVisibility();
         render();
         return;
       }
@@ -1803,7 +1846,6 @@
     viewGridBtn.addEventListener('click', () => setView('grid'));
 
     setView('grid');
-    updateParticipantsVisibility();
     render();
   </script>
 
