@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>New event — mobile prototype</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    min-height: 100%;
+    background: #e5e5ea;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 24px 20px;
+    min-height: 100vh;
+    justify-content: center;
+  }
+
+  .stage-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b6b70;
+    letter-spacing: 0.02em;
+  }
+
+  .iphone-wrap {
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* iPhone frame — 15 Pro proportions, screen 393x852 native */
+  .iphone {
+    position: relative;
+    width: 421px;
+    height: 880px;
+    background: #0b0b0d;
+    border-radius: 62px;
+    padding: 14px;
+    box-shadow:
+      0 0 0 2px #2a2a2e,
+      0 30px 60px -20px rgba(0,0,0,0.45),
+      0 10px 20px -8px rgba(0,0,0,0.3);
+    transform-origin: top left;
+  }
+
+  .iphone::before {
+    /* side button (right) */
+    content: "";
+    position: absolute;
+    right: -3px;
+    top: 200px;
+    width: 3px;
+    height: 90px;
+    background: #1c1c1e;
+    border-radius: 2px;
+  }
+
+  .iphone::after {
+    /* mute switch + volume (left) */
+    content: "";
+    position: absolute;
+    left: -3px;
+    top: 150px;
+    width: 3px;
+    height: 100px;
+    background: #1c1c1e;
+    border-radius: 2px;
+    box-shadow: 0 -70px 0 -2px #1c1c1e;
+  }
+
+  .iphone-screen {
+    position: relative;
+    width: 393px;
+    height: 852px;
+    background: #fff;
+    border-radius: 48px;
+    overflow: hidden;
+  }
+
+  .dynamic-island {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 118px;
+    height: 34px;
+    background: #0b0b0d;
+    border-radius: 20px;
+    z-index: 20;
+    pointer-events: none;
+  }
+
+  .home-indicator {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 134px;
+    height: 5px;
+    background: rgba(0,0,0,0.85);
+    border-radius: 3px;
+    z-index: 20;
+    pointer-events: none;
+  }
+
+  .iphone-screen iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 393px;
+    height: 852px;
+    border: none;
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+  <div class="stage">
+    <div class="stage-label">New event — mobile prototype</div>
+    <div class="iphone-wrap">
+      <div class="iphone">
+        <div class="iphone-screen">
+          <iframe src="meeting-creation-v3_4-mobile.html"></iframe>
+          <div class="dynamic-island"></div>
+          <div class="home-indicator"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const FRAME_W = 421, FRAME_H = 880;
+  const wrap = document.querySelector('.iphone-wrap');
+  const iphone = document.querySelector('.iphone');
+  const label = document.querySelector('.stage-label');
+
+  function fit() {
+    const reserved = label.offsetHeight + 20 + 48; // label + gap + stage padding
+    const available = window.innerHeight - reserved;
+    const scale = Math.min(1, available / FRAME_H);
+    iphone.style.transform = `scale(${scale})`;
+    wrap.style.width = (FRAME_W * scale) + 'px';
+    wrap.style.height = (FRAME_H * scale) + 'px';
+  }
+
+  fit();
+  window.addEventListener('resize', fit);
+</script>
+
+</body>
+</html>

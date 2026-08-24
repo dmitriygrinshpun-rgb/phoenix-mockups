@@ -49,7 +49,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 40px;
+    padding: 12px 16px;
     background: #fff;
     border-bottom: 1px solid var(--border-soft);
   }
@@ -73,12 +73,12 @@
   /* Scroll area */
   .scroll-area { flex: 1; overflow-y: auto; }
   .form {
-    max-width: 720px;
+    max-width: 100%;
     margin: 0 auto;
-    padding: 40px 40px 140px;
+    padding: 20px 16px 120px;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 20px;
   }
 
   .field-title { display: flex; flex-direction: column; }
@@ -107,7 +107,7 @@
   .field-row {
     display: flex;
     align-items: flex-start;
-    gap: 20px;
+    gap: 12px;
   }
   .field-row.center { align-items: center; }
   .field-icon {
@@ -142,12 +142,12 @@
   }
   .input-sm {
     width: 100%;
-    height: 36px;
+    height: 40px;
     border-radius: 8px;
     border: 1px solid var(--border);
     background: transparent;
     padding: 0 12px;
-    font-size: 14px;
+    font-size: 16px; /* keeps iOS Safari from auto-zooming on focus */
     outline: none;
     transition: border-color .15s, box-shadow .15s;
   }
@@ -182,7 +182,6 @@
     border-radius: 12px;
     background: var(--primary-tint);
     padding: 12px 16px;
-    margin-left: 40px;
   }
   .banner .icon { color: #2563c9; margin-top: 2px; }
   .banner-title { font-size: 14px; font-weight: 500; color: #1c4d8c; margin: 0; line-height: 1.4; }
@@ -190,7 +189,7 @@
   .banner-close { color: #2563c9; margin-left: auto; flex-shrink: 0; transition: opacity .15s; }
   .banner-close:hover { opacity: .7; }
 
-  .divider { height: 1px; background: var(--border-soft); margin-left: 40px; }
+  .divider { height: 1px; background: var(--border-soft); }
 
   .select-btn {
     display: inline-flex;
@@ -210,7 +209,9 @@
   .select-btn.full { width: 100%; justify-content: space-between; }
   .select-btn.w-fixed { width: 140px; justify-content: space-between; }
 
-  .row-header { display: flex; align-items: center; justify-content: space-between; }
+  /* A label plus one or two controls doesn't fit on one line at phone
+     width without squeezing - stack the controls below the label instead. */
+  .row-header { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
 
   .dropdown-wrap { position: relative; }
   .dropdown-menu {
@@ -241,7 +242,7 @@
   .dropdown-divider { height: 1px; background: var(--border-soft); margin: 4px 2px; }
   .duration-custom-form { display: flex; align-items: center; gap: 6px; padding: 6px 8px 4px; }
   .duration-custom-inputs { display: flex; align-items: center; gap: 4px; }
-  .duration-custom-inputs .input-number { width: 44px; height: 28px; padding: 0 6px; text-align: center; }
+  .duration-custom-inputs .input-number { width: 48px; height: 34px; padding: 0 6px; text-align: center; }
   .duration-custom-inputs span { font-size: 12px; color: var(--text-muted); }
   .duration-custom-form .btn-primary { height: 28px; padding: 0 12px; font-size: 12px; margin-left: auto; }
 
@@ -294,9 +295,9 @@
   .time-row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
   .time-inputs { display: flex; align-items: center; gap: 8px; width: 100%; }
   .input-time {
-    flex: 1; min-width: 0; height: 32px;
+    flex: 1; min-width: 0; height: 38px;
     border-radius: 8px; border: 1px solid var(--border);
-    padding: 0 10px; font-size: 14px; outline: none;
+    padding: 0 10px; font-size: 16px; outline: none;
   }
   .input-time:focus { border-color: var(--primary); }
   .input-time[readonly] { cursor: pointer; background: transparent; }
@@ -346,21 +347,34 @@
   .grid-week-nav-btn:hover:not(:disabled) { background: var(--hover); color: var(--text); }
   .grid-week-nav-btn:disabled { opacity: .35; cursor: default; }
   .grid-week-label { font-size: 13px; font-weight: 600; min-width: 130px; text-align: center; }
-  .grid-wrap { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-  .grid-scroll { overflow-x: auto; scrollbar-width: none; }
+  .grid-wrap { position: relative; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .grid-scroll { overflow-x: auto; scrollbar-width: none; scroll-snap-type: x mandatory; scroll-padding-left: 62px; -webkit-overflow-scrolling: touch; }
   .grid-scroll::-webkit-scrollbar { display: none; }
   .grid-table { display: grid; }
   .grid-head-cell {
     padding: 8px 2px; font-size: 11px; font-weight: 600; text-align: center;
     background: #fafafa; border-bottom: 1px solid var(--border);
     border-right: 1px solid var(--border-soft);
+    scroll-snap-align: start;
+  }
+  .grid-corner-cell {
+    position: sticky; left: 0; z-index: 4;
+    background: #fafafa; border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border-soft);
   }
   .grid-time-cell {
-    padding: 0 6px; font-size: 10px; color: var(--text-muted);
+    padding: 0 4px; font-size: 10.5px; color: var(--text-muted);
     display: flex; align-items: flex-start; justify-content: flex-end;
     border-right: 1px solid var(--border-soft); white-space: nowrap;
+    position: sticky; left: 0; z-index: 3; background: #fff;
   }
-  .grid-cell { height: 18px; cursor: pointer; border-right: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); transition: background-color .1s; }
+  .grid-cell { height: 24px; cursor: pointer; border-right: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); transition: background-color .1s; }
+  .grid-fade {
+    position: absolute; top: 0; bottom: 0; right: 0; width: 28px;
+    background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.9));
+    pointer-events: none; z-index: 5; transition: opacity .15s ease;
+  }
+  .grid-fade.is-hidden { opacity: 0; }
   .grid-cell:hover { background: var(--hover); }
   .grid-cell.selected { background: var(--primary); }
   .grid-cell.selected:hover { background: var(--primary-dark); }
@@ -409,9 +423,9 @@
   .adv-toggle-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
   .adv-toggle-sub { margin-top: -6px; }
   .input-number {
-    width: 84px; height: 32px;
+    width: 84px; height: 38px;
     border-radius: 8px; border: 1px solid var(--border);
-    padding: 0 10px; font-size: 14px; outline: none;
+    padding: 0 10px; font-size: 16px; outline: none;
   }
   .input-number:focus { border-color: var(--primary); }
 
@@ -431,20 +445,19 @@
   }
   .rich-editable:empty:before { content: attr(data-placeholder); color: var(--text-muted); }
 
-  .calendar-row { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; min-width: 0; }
+  .calendar-row { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 0; }
   .cal-logo { width: 16px; height: 16px; flex-shrink: 0; }
   .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   footer.footer {
     flex-shrink: 0;
     display: flex;
-    padding: 16px 40px;
+    padding: 12px 16px;
     background: #fff;
     border-top: 1px solid var(--border-soft);
   }
   .footer-inner {
     width: 100%;
-    max-width: 720px;
     margin: 0 auto;
     display: flex;
     align-items: center;
@@ -452,68 +465,61 @@
     gap: 12px;
   }
   .btn-secondary {
-    height: 36px; padding: 0 18px; border-radius: 999px;
+    height: 44px; padding: 0 18px; border-radius: 999px;
     font-size: 14px; font-weight: 500; color: var(--text-soft);
     transition: background-color .15s;
   }
   .btn-secondary:hover { background: var(--hover); }
   .btn-primary {
-    height: 36px; padding: 0 22px; border-radius: 999px;
+    height: 44px; padding: 0 22px; border-radius: 999px;
     font-size: 14px; font-weight: 600; color: #fff; background: var(--primary);
     transition: background-color .15s;
   }
   .btn-primary:hover { background: var(--primary-dark); }
 
-  @media (max-width: 640px) {
-    .topbar, .form, footer.footer { padding-left: 20px; padding-right: 20px; }
-    .banner, .divider { margin-left: 0; }
-    .field-row { gap: 12px; }
-    .calendar-row { flex-direction: column; }
-  }
-
-
   /* Sections that only make sense once an intent is picked */
   #post-intent-sections { display: flex; flex-direction: column; gap: 24px; }
   .prompt-text { font-size: 13px; color: var(--text-muted); font-style: italic; }
 
-  /* Fork 2: mechanism toggle (specific times vs. open/rolling availability) */
+  /* Fork 2: mechanism toggle (specific times vs. open/rolling availability).
+     Mobile-width labels ("I have specific times in mind") don't fit two-up
+     without wrapping or clipping, so pickers stack full-width here instead
+     of sitting side by side like the desktop build. */
   .mechanism-row {
-    display: inline-flex;
-    align-self: flex-start;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
     gap: 4px;
     padding: 4px;
     background: #f2f2f2;
     border-radius: 12px;
   }
   .mechanism-btn {
-    padding: 0 14px;
-    height: 34px;
+    width: 100%;
+    padding: 10px 14px;
     border-radius: 9px;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     color: var(--text-soft);
     transition: background-color .15s, color .15s, box-shadow .15s;
-    white-space: nowrap;
+    text-align: center;
   }
   .mechanism-btn:hover:not(.active) { color: var(--text); }
   .mechanism-btn.active { background: #fff; color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.12); font-weight: 600; }
 
   /* Fork 1 (top-level: group poll vs. share availability) is the primary
      decision on this screen, so it gets more visual weight than Fork 2
-     below it - full width, taller, bolder, brand-colored when active. */
+     below it - taller, bolder, brand-colored when active. */
   #intent-toggle {
-    align-self: stretch;
-    width: 100%;
     gap: 6px;
     padding: 6px;
     background: var(--hover-soft);
     border: 1px solid var(--border);
   }
   #intent-toggle .mechanism-btn {
-    flex: 1;
-    height: 48px;
+    height: 52px;
     border-radius: 10px;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
   }
   #intent-toggle .mechanism-btn:hover:not(.active) { background: rgba(0,0,0,0.04); color: var(--text); }
@@ -770,7 +776,7 @@
 
           <!-- Grid view: pick times directly on a calendar grid -->
           <div id="grid-view" style="display: none;">
-            <p class="grid-hint">Click a day and time to propose it. Click again to remove it.</p>
+            <p class="grid-hint">Tap a day and time to propose it, tap again to remove it. Swipe sideways to see more days.</p>
             <div class="grid-week-nav">
               <button type="button" class="grid-week-nav-btn" id="grid-week-prev" aria-label="Previous week" disabled>
                 <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
@@ -784,6 +790,7 @@
               <div class="grid-scroll">
                 <div class="grid-table" id="grid-table" style="grid-template-columns: 56px repeat(6, 1fr);"><div></div><div class="grid-head-cell">Mon Feb 10</div><div class="grid-head-cell">Tue Feb 11</div><div class="grid-head-cell">Wed Feb 12</div><div class="grid-head-cell">Thu Feb 13</div><div class="grid-head-cell">Fri Feb 14</div><div class="grid-head-cell">Sat Feb 15</div><div class="grid-time-cell">8:00 AM</div><div class="grid-cell hour-start" data-day-key="2026-02-10" data-half="0"></div><div class="grid-cell hour-start" data-day-key="2026-02-11" data-half="0"></div><div class="grid-cell hour-start" data-day-key="2026-02-12" data-half="0"></div><div class="grid-cell hour-start" data-day-key="2026-02-13" data-half="0"></div><div class="grid-cell hour-start" data-day-key="2026-02-14" data-half="0"></div><div class="grid-cell hour-start" data-day-key="2026-02-15" data-half="0"></div><div class="grid-time-cell"></div><div class="grid-cell" data-day-key="2026-02-10" data-half="1"></div><div class="grid-cell" data-day-key="2026-02-11" data-half="1"></div><div class="grid-cell" data-day-key="2026-02-12" data-half="1"></div><div class="grid-cell" data-day-key="2026-02-13" data-half="1"></div><div class="grid-cell" data-day-key="2026-02-14" data-half="1"></div><div class="grid-cell" data-day-key="2026-02-15" data-half="1"></div><div class="grid-time-cell">9:00 AM</div><div class="grid-cell hour-start" data-day-key="2026-02-10" data-half="2"></div><div class="grid-cell hour-start" data-day-key="2026-02-11" data-half="2"></div><div class="grid-cell hour-start" data-day-key="2026-02-12" data-half="2"></div><div class="grid-cell hour-start" data-day-key="2026-02-13" data-half="2"></div><div class="grid-cell hour-start" data-day-key="2026-02-14" data-half="2"></div><div class="grid-cell hour-start" data-day-key="2026-02-15" data-half="2"></div><div class="grid-time-cell"></div><div class="grid-cell" data-day-key="2026-02-10" data-half="3"></div><div class="grid-cell" data-day-key="2026-02-11" data-half="3"></div><div class="grid-cell" data-day-key="2026-02-12" data-half="3"></div><div class="grid-cell" data-day-key="2026-02-13" data-half="3"></div><div class="grid-cell" data-day-key="2026-02-14" data-half="3"></div><div class="grid-cell" data-day-key="2026-02-15" data-half="3"></div><div class="grid-time-cell">10:00 AM</div><div class="grid-cell hour-start" data-day-key="2026-02-10" data-half="4"></div><div class="grid-cell hour-start" data-day-key="2026-02-11" data-half="4"></div><div class="grid-cell hour-start" data-day-key="2026-02-12" data-half="4"></div><div class="grid-cell hour-start" data-day-key="2026-02-13" data-half="4"></div><div class="grid-cell hour-start" data-day-key="2026-02-14" data-half="4"></div><div class="grid-cell hour-start" data-day-key="2026-02-15" data-half="4"></div><div class="grid-time-cell"></div><div class="grid-cell" data-day-key="2026-02-10" data-half="5"></div><div class="grid-cell" data-day-key="2026-02-11" data-half="5"></div><div class="grid-cell" data-day-key="2026-02-12" data-half="5"></div><div class="grid-cell" data-day-key="2026-02-13" data-half="5"></div><div class="grid-cell" data-day-key="2026-02-14" data-half="5"></div><div class="grid-cell" data-day-key="2026-02-15" data-half="5"></div><div class="grid-time-cell">11:00 AM</div><div class="grid-cell hour-start" data-day-key="2026-02-10" data-half="6"></div><div class="grid-cell hour-start" data-day-key="2026-02-11" data-half="6"></div><div class="grid-cell hour-start" data-day-key="2026-02-12" data-half="6"></div><div class="grid-cell hour-start" data-day-key="2026-02-13" data-half="6"></div><div class="grid-cell hour-start" data-day-key="2026-02-14" data-half="6"></div><div class="grid-cell hour-start" data-day-key="2026-02-15" data-half="6"></div><div class="grid-time-cell"></div><div class="grid-cell" data-day-key="2026-02-10" data-half="7"></div><div class="grid-cell" data-day-key="2026-02-11" data-half="7"></div><div class="grid-cell" data-day-key="2026-02-12" data-half="7"></div><div class="grid-cell" data-day-key="2026-02-13" data-half="7"></div><div class="grid-cell" data-day-key="2026-02-14" data-half="7"></div><div class="grid-cell" data-day-key="2026-02-15" data-half="7"></div><div class="grid-time-cell">12:00 PM</div><div class="grid-cell hour-start" data-day-key="2026-02-10" data-half="8"></div><div class="grid-cell hour-start" data-day-key="2026-02-11" data-half="8"></div><div class="grid-cell hour-start" data-day-key="2026-02-12" data-half="8"></div><div class="grid-cell hour-start" data-day-key="2026-02-13" data-half="8"></div><div class="grid-cell hour-start" data-day-key="2026-02-14" data-half="8"></div><div class="grid-cell hour-start" data-day-key="2026-02-15" data-half="8"></div><div class="grid-time-cell"></div><div class="grid-cell" data-day-key="2026-02-10" data-half="9"></div><div class="grid-cell" data-day-key="2026-02-11" data-half="9"></div><div class="grid-cell" data-day-key="2026-02-12" data-half="9"></div><div class="grid-cell" data-day-key="2026-02-13" data-half="9"></div><div class="grid-cell" data-day-key="2026-02-14" data-half="9"></div><div class="grid-cell" data-day-key="2026-02-15" data-half="9"></div><div class="grid-time-cell">1:00 PM</div><div class="grid-cell hour-start" data-day-key="2026-02-10" data-half="10"></div><div class="grid-cell hour-start" data-day-key="2026-02-11" data-half="10"></div><div class="grid-cell hour-start" data-day-key="2026-02-12" data-half="10"></div><div class="grid-cell hour-start" data-day-key="2026-02-13" data-half="10"></div><div class="grid-cell hour-start" data-day-key="2026-02-14" data-half="10"></div><div class="grid-cell hour-start" data-day-key="2026-02-15" data-half="10"></div><div class="grid-time-cell"></div><div class="grid-cell" data-day-key="2026-02-10" data-half="11"></div><div class="grid-cell" data-day-key="2026-02-11" data-half="11"></div><div class="grid-cell" data-day-key="2026-02-12" data-half="11"></div><div class="grid-cell" data-day-key="2026-02-13" data-half="11"></div><div class="grid-cell" data-day-key="2026-02-14" data-half="11"></div><div class="grid-cell" data-day-key="2026-02-15" data-half="11"></div><div class="grid-time-cell">2:00 PM</div><div class="grid-cell hour-start" data-day-key="2026-02-10" data-half="12"></div><div class="grid-cell hour-start" data-day-key="2026-02-11" data-half="12"></div><div class="grid-cell hour-start" data-day-key="2026-02-12" data-half="12"></div><div class="grid-cell hour-start" data-day-key="2026-02-13" data-half="12"></div><div class="grid-cell hour-start" data-day-key="2026-02-14" data-half="12"></div><div class="grid-cell hour-start" data-day-key="2026-02-15" data-half="12"></div><div class="grid-time-cell"></div><div class="grid-cell" data-day-key="2026-02-10" data-half="13"></div><div class="grid-cell" data-day-key="2026-02-11" data-half="13"></div><div class="grid-cell" data-day-key="2026-02-12" data-half="13"></div><div class="grid-cell" data-day-key="2026-02-13" data-half="13"></div><div class="grid-cell" data-day-key="2026-02-14" data-half="13"></div><div class="grid-cell" data-day-key="2026-02-15" data-half="13"></div><div class="grid-time-cell">3:00 PM</div><div class="grid-cell hour-start" data-day-key="2026-02-10" data-half="14"></div><div class="grid-cell hour-start" data-day-key="2026-02-11" data-half="14"></div><div class="grid-cell hour-start" data-day-key="2026-02-12" data-half="14"></div><div class="grid-cell hour-start" data-day-key="2026-02-13" data-half="14"></div><div class="grid-cell hour-start" data-day-key="2026-02-14" data-half="14"></div><div class="grid-cell hour-start" data-day-key="2026-02-15" data-half="14"></div><div class="grid-time-cell"></div><div class="grid-cell" data-day-key="2026-02-10" data-half="15"></div><div class="grid-cell" data-day-key="2026-02-11" data-half="15"></div><div class="grid-cell" data-day-key="2026-02-12" data-half="15"></div><div class="grid-cell" data-day-key="2026-02-13" data-half="15"></div><div class="grid-cell" data-day-key="2026-02-14" data-half="15"></div><div class="grid-cell" data-day-key="2026-02-15" data-half="15"></div><div class="grid-time-cell">4:00 PM</div><div class="grid-cell hour-start" data-day-key="2026-02-10" data-half="16"></div><div class="grid-cell hour-start" data-day-key="2026-02-11" data-half="16"></div><div class="grid-cell hour-start" data-day-key="2026-02-12" data-half="16"></div><div class="grid-cell hour-start" data-day-key="2026-02-13" data-half="16"></div><div class="grid-cell hour-start" data-day-key="2026-02-14" data-half="16"></div><div class="grid-cell hour-start" data-day-key="2026-02-15" data-half="16"></div><div class="grid-time-cell"></div><div class="grid-cell" data-day-key="2026-02-10" data-half="17"></div><div class="grid-cell" data-day-key="2026-02-11" data-half="17"></div><div class="grid-cell" data-day-key="2026-02-12" data-half="17"></div><div class="grid-cell" data-day-key="2026-02-13" data-half="17"></div><div class="grid-cell" data-day-key="2026-02-14" data-half="17"></div><div class="grid-cell" data-day-key="2026-02-15" data-half="17"></div><div class="grid-time-cell">5:00 PM</div><div class="grid-cell hour-start" data-day-key="2026-02-10" data-half="18"></div><div class="grid-cell hour-start" data-day-key="2026-02-11" data-half="18"></div><div class="grid-cell hour-start" data-day-key="2026-02-12" data-half="18"></div><div class="grid-cell hour-start" data-day-key="2026-02-13" data-half="18"></div><div class="grid-cell hour-start" data-day-key="2026-02-14" data-half="18"></div><div class="grid-cell hour-start" data-day-key="2026-02-15" data-half="18"></div><div class="grid-time-cell"></div><div class="grid-cell" data-day-key="2026-02-10" data-half="19"></div><div class="grid-cell" data-day-key="2026-02-11" data-half="19"></div><div class="grid-cell" data-day-key="2026-02-12" data-half="19"></div><div class="grid-cell" data-day-key="2026-02-13" data-half="19"></div><div class="grid-cell" data-day-key="2026-02-14" data-half="19"></div><div class="grid-cell" data-day-key="2026-02-15" data-half="19"></div></div>
               </div>
+              <div class="grid-fade is-hidden" id="grid-fade"></div>
             </div>
           </div>
         </div>
@@ -1647,15 +1654,29 @@
       timePopoverList.appendChild(item);
     }
 
+    // On a phone-width screen a popover anchored to a trigger near the
+    // right edge would otherwise render partly off-screen - clamp it back
+    // within the viewport (and flip above the trigger if there's no room
+    // below) instead.
+    function positionPopover(popoverEl, anchorRect, gap = 4) {
+      const margin = 8;
+      let left = Math.min(anchorRect.left, window.innerWidth - popoverEl.offsetWidth - margin);
+      left = Math.max(margin, left);
+      let top = anchorRect.bottom + gap;
+      if (top + popoverEl.offsetHeight > window.innerHeight - margin) {
+        top = Math.max(margin, anchorRect.top - popoverEl.offsetHeight - gap);
+      }
+      popoverEl.style.left = `${left}px`;
+      popoverEl.style.top = `${top}px`;
+    }
+
     function openTimePopover(input) {
       timePopoverTarget = input;
       timePopoverList.querySelectorAll('.time-popover-item').forEach((item) => {
         item.classList.toggle('selected', item.textContent === input.value);
       });
-      const rect = input.getBoundingClientRect();
-      timePopover.style.top = `${rect.bottom + 4}px`;
-      timePopover.style.left = `${rect.left}px`;
       timePopover.classList.add('open');
+      positionPopover(timePopover, input.getBoundingClientRect());
       const selected = timePopoverList.querySelector('.selected');
       if (selected) selected.scrollIntoView({ block: 'center' });
     }
@@ -1708,10 +1729,8 @@
       dpYear = now.getFullYear();
       dpMonth = now.getMonth();
       renderDatePicker();
-      const rect = labelSpan.closest('.select-btn').getBoundingClientRect();
-      datePopover.style.top = `${rect.bottom + 4}px`;
-      datePopover.style.left = `${rect.left}px`;
       datePopover.classList.add('open');
+      positionPopover(datePopover, labelSpan.closest('.select-btn').getBoundingClientRect());
     }
 
     function closeDatePicker() {
@@ -1863,21 +1882,34 @@
 
     // ── Calendar grid ──
     const gridTable = document.getElementById('grid-table');
+    const gridScroll = document.querySelector('.grid-scroll');
+    const gridFade = document.getElementById('grid-fade');
     const gridWeekLabel = document.getElementById('grid-week-label');
     const gridWeekPrevBtn = document.getElementById('grid-week-prev');
     const gridWeekNextBtn = document.getElementById('grid-week-next');
+
+    function updateGridFade() {
+      const atEnd = gridScroll.scrollLeft + gridScroll.clientWidth >= gridScroll.scrollWidth - 1;
+      gridFade.classList.toggle('is-hidden', atEnd);
+    }
+    gridScroll.addEventListener('scroll', updateGridFade, { passive: true });
 
     function renderGridWeek() {
       GRID_DAYS = buildGridDays(gridWeekOffset);
       gridWeekLabel.textContent = `${GRID_DAYS[0].date} – ${GRID_DAYS[GRID_DAYS.length - 1].date}`;
       gridWeekPrevBtn.disabled = gridWeekOffset <= 0;
 
-      gridTable.style.gridTemplateColumns = `56px repeat(${GRID_DAYS.length}, 1fr)`;
+      // Fixed (not 1fr) day columns: on a phone-width screen, 6 flexible
+      // columns squeeze illegibly narrow. A comfortable fixed width plus
+      // the existing horizontal scroll lets people swipe through the week.
+      gridTable.style.gridTemplateColumns = `62px repeat(${GRID_DAYS.length}, 68px)`;
       gridTable.innerHTML = ''; // this file was saved with a static copy of the grid already
                                 // baked in from a live session - clear it before re-rendering,
                                 // otherwise the header/cells render twice (pre-existing bug).
 
-      gridTable.appendChild(document.createElement('div')); // blank corner cell
+      const cornerCell = document.createElement('div');
+      cornerCell.className = 'grid-corner-cell';
+      gridTable.appendChild(cornerCell);
       GRID_DAYS.forEach((day) => {
         const head = document.createElement('div');
         head.className = 'grid-head-cell';
@@ -1900,6 +1932,9 @@
           gridTable.appendChild(cell);
         });
       }
+
+      gridScroll.scrollLeft = 0;
+      updateGridFade();
     }
 
     gridWeekPrevBtn.addEventListener('click', () => {
