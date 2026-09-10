@@ -337,7 +337,17 @@
   .slot-empty { font-size: 12px; color: var(--text-muted); padding: 6px 0 2px; }
 
   .grid-hint { font-size: 12px; color: var(--text-muted); margin: 0 0 10px; }
-  .grid-week-nav { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 10px; }
+  .grid-week-nav { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 10px; }
+  .grid-week-nav-controls { display: flex; align-items: center; gap: 14px; margin: 0 auto; }
+  .tz-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 8px; border-radius: 8px; font-size: 12.5px;
+    color: var(--text-muted); transition: background-color .15s, color .15s;
+    flex-shrink: 0;
+  }
+  .tz-btn:hover { background: var(--hover); color: var(--text); }
+  .tz-btn .icon-xs { width: 14px; height: 14px; flex-shrink: 0; }
+  #timezone-menu { right: 0; left: auto; min-width: 190px; max-height: 260px; overflow-y: auto; }
   .grid-week-nav-btn {
     width: 28px; height: 28px; border-radius: 999px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
@@ -640,7 +650,7 @@
           <!-- Named guests: an addition on top of the link above, not an
                alternative to it. Always expanded - no need to hide it once
                shown. -->
-          <span class="invite-toggle-btn">+ Invite specific people too</span>
+          <span class="invite-toggle-btn" id="invite-toggle-btn">+ Invite specific people too</span>
 
           <div id="participants-expanded">
             <div class="search-wrap">
@@ -705,18 +715,18 @@
             <div style="display:flex; align-items:center; gap:8px;">
               <div class="dropdown-wrap" id="duration-dropdown-wrap">
                 <button type="button" class="select-btn w-fixed" id="duration-btn">
-                  <span id="duration-label">1 hour</span>
+                  <span id="duration-label">60 min</span>
                   <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
                 </button>
                 <div class="dropdown-menu" id="duration-menu">
                   <button type="button" class="dropdown-item" data-duration="15 min">15 min</button>
                   <button type="button" class="dropdown-item" data-duration="30 min">30 min</button>
-                  <button type="button" class="dropdown-item" data-duration="45 min">45 min</button>
-                  <button type="button" class="dropdown-item selected" data-duration="1 hour">1 hour</button>
-                  <button type="button" class="dropdown-item" data-duration="1.5 hours">1.5 hours</button>
-                  <button type="button" class="dropdown-item" data-duration="2 hours">2 hours</button>
+                  <button type="button" class="dropdown-item selected" data-duration="60 min">60 min</button>
+                  <button type="button" class="dropdown-item" data-duration="90 min">90 min</button>
+                  <button type="button" class="dropdown-item" data-duration="120 min">120 min</button>
+                  <button type="button" class="dropdown-item" data-duration="All day">All day</button>
                   <div class="dropdown-divider"></div>
-                  <button type="button" class="dropdown-item" id="duration-custom-item" data-duration="custom">Custom&hellip;</button>
+                  <button type="button" class="dropdown-item" id="duration-custom-item" data-duration="custom">Custom duration</button>
                   <div class="duration-custom-form" id="duration-custom-form" style="display:none;">
                     <div class="duration-custom-inputs">
                       <input type="number" min="0" max="23" id="duration-custom-hours" class="input-number" placeholder="0">
@@ -772,13 +782,31 @@
           <div id="grid-view" style="display: none;">
             <p class="grid-hint">Click a day and time to propose it. Click again to remove it.</p>
             <div class="grid-week-nav">
-              <button type="button" class="grid-week-nav-btn" id="grid-week-prev" aria-label="Previous week" disabled>
-                <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
-              </button>
-              <span class="grid-week-label" id="grid-week-label"></span>
-              <button type="button" class="grid-week-nav-btn" id="grid-week-next" aria-label="Next week">
-                <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
-              </button>
+              <div class="grid-week-nav-controls">
+                <button type="button" class="grid-week-nav-btn" id="grid-week-prev" aria-label="Previous week" disabled>
+                  <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+                </button>
+                <span class="grid-week-label" id="grid-week-label"></span>
+                <button type="button" class="grid-week-nav-btn" id="grid-week-next" aria-label="Next week">
+                  <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+                </button>
+              </div>
+              <div class="dropdown-wrap" id="timezone-dropdown-wrap">
+                <button type="button" class="tz-btn" id="timezone-btn">
+                  <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+                  <span id="timezone-label">Berlin (GMT+2)</span>
+                  <svg class="icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                </button>
+                <div class="dropdown-menu" id="timezone-menu">
+                  <button type="button" class="dropdown-item" data-tz="Los Angeles (GMT-7)">Los Angeles (GMT-7)</button>
+                  <button type="button" class="dropdown-item" data-tz="New York (GMT-4)">New York (GMT-4)</button>
+                  <button type="button" class="dropdown-item" data-tz="UTC">UTC</button>
+                  <button type="button" class="dropdown-item" data-tz="London (GMT+1)">London (GMT+1)</button>
+                  <button type="button" class="dropdown-item selected" data-tz="Berlin (GMT+2)">Berlin (GMT+2)</button>
+                  <button type="button" class="dropdown-item" data-tz="Tokyo (GMT+9)">Tokyo (GMT+9)</button>
+                  <button type="button" class="dropdown-item" data-tz="Sydney (GMT+10)">Sydney (GMT+10)</button>
+                </div>
+              </div>
             </div>
             <div class="grid-wrap">
               <div class="grid-scroll">
@@ -1059,11 +1087,27 @@
                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"></path><rect height="12" rx="2" width="14" x="2" y="6"></rect></svg>
               </div>
               <div style="flex:1; min-width:0;">
-                <button type="button" class="select-btn">
-                  <svg class="cal-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6.5A2.5 2.5 0 015.5 4h8A2.5 2.5 0 0116 6.5v11a2.5 2.5 0 01-2.5 2.5h-8A2.5 2.5 0 013 17.5v-11z" fill="#00832D"></path><path d="M16 9l5-3.5v13L16 15V9z" fill="#00AC47"></path><path d="M3 6.5A2.5 2.5 0 015.5 4h8A2.5 2.5 0 0116 6.5V12H3V6.5z" fill="#0066DA"></path><path d="M16 12v5.5a2.5 2.5 0 01-2.5 2.5h-8A2.5 2.5 0 013 17.5V12h13z" fill="#00832D"></path><path d="M16 12l5-3.5V12h-5z" fill="#00AC47"></path><path d="M16 12h5v6.5L16 15v-3z" fill="#FFBA00"></path></svg>
-                  <span>Google Meet</span>
-                  <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
-                </button>
+                <div class="dropdown-wrap" id="videoconf-dropdown-wrap">
+                  <button type="button" class="select-btn" id="videoconf-btn">
+                    <span id="videoconf-icon-wrap" style="display:inline-flex;"><svg class="cal-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#9a40b5"></rect><circle cx="12" cy="12" r="6" fill="#fff"></circle></svg></span>
+                    <span id="videoconf-label">Doodle</span>
+                    <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+                  </button>
+                  <div class="dropdown-menu" id="videoconf-menu">
+                    <button type="button" class="dropdown-item selected" data-vc="Doodle" data-vc-icon="doodle" style="display:flex; align-items:center; gap:8px;">
+                      <svg class="cal-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#9a40b5"></rect><circle cx="12" cy="12" r="6" fill="#fff"></circle></svg>
+                      Doodle
+                    </button>
+                    <button type="button" class="dropdown-item" data-vc="Zoom" data-vc-icon="zoom" style="display:flex; align-items:center; gap:8px;">
+                      <svg class="cal-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="6" fill="#2D8CFF"></rect><rect x="5" y="8" width="10" height="8" rx="2" fill="#fff"></rect><path d="M16 10.5l3-2v7l-3-2v-3z" fill="#fff"></path></svg>
+                      Zoom
+                    </button>
+                    <button type="button" class="dropdown-item" data-vc="Google Meet" data-vc-icon="meet" style="display:flex; align-items:center; gap:8px;">
+                      <svg class="cal-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6.5A2.5 2.5 0 015.5 4h8A2.5 2.5 0 0116 6.5v11a2.5 2.5 0 01-2.5 2.5h-8A2.5 2.5 0 013 17.5v-11z" fill="#00832D"></path><path d="M16 9l5-3.5v13L16 15V9z" fill="#00AC47"></path><path d="M3 6.5A2.5 2.5 0 015.5 4h8A2.5 2.5 0 0116 6.5V12H3V6.5z" fill="#0066DA"></path><path d="M16 12v5.5a2.5 2.5 0 01-2.5 2.5h-8A2.5 2.5 0 013 17.5V12h13z" fill="#00832D"></path><path d="M16 12l5-3.5V12h-5z" fill="#00AC47"></path><path d="M16 12h5v6.5L16 15v-3z" fill="#FFBA00"></path></svg>
+                      Google Meet
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1196,6 +1240,8 @@
     const participantsLabel = document.getElementById('participants-label');
     const linkAccessCopy = document.getElementById('link-access-copy');
     const linkAccessSwitch = document.getElementById('link-access-switch');
+    const inviteToggleBtn = document.getElementById('invite-toggle-btn');
+    const participantsExpanded = document.getElementById('participants-expanded');
     const pollTypeLabel = document.getElementById('poll-type-label');
     const timesSection = document.getElementById('times-section');
     const bookingSection = document.getElementById('booking-availability-section');
@@ -1270,7 +1316,15 @@
       });
 
       participantsLabel.textContent = type === '1on1' ? 'Guest' : 'Participants';
-      guestSearch.placeholder = type === '1on1' ? 'Add guest (optional)' : 'Add guests (optional)';
+      const guestFieldLabel = type === '1on1' ? 'Add guest' : 'Add guests';
+      guestSearch.placeholder = state.linkEnabled ? `${guestFieldLabel} (optional)` : guestFieldLabel;
+      inviteToggleBtn.textContent = state.linkEnabled ? '+ Invite specific people too' : '+ Invite specific people';
+
+      // On "Let people book time with you", named guests are only relevant
+      // once the link is off - with the link on, anyone can already book.
+      const showInviteGuests = state.intent === 'converge' || !state.linkEnabled;
+      inviteToggleBtn.style.display = showInviteGuests ? '' : 'none';
+      participantsExpanded.style.display = showInviteGuests ? 'flex' : 'none';
 
       // The link is never replaced by named guests, only ever added to - say so
       // plainly so the two never read as an either/or choice.
@@ -1339,6 +1393,13 @@
         if (state.intent === btn.dataset.intent) return;
         state.intent = btn.dataset.intent;
         state.mechanism = null;
+        // "Let people book time with you" always starts with the link on -
+        // it shouldn't inherit an off state left over from Group Poll.
+        if (state.intent === 'claim') {
+          state.linkEnabled = true;
+          linkAccessSwitch.setAttribute('aria-checked', 'true');
+          linkAccessSwitch.classList.add('on');
+        }
         render();
       });
     });
@@ -1507,6 +1568,50 @@
 
     document.addEventListener('click', (e) => {
       if (!durationWrap.contains(e.target)) closeDurationMenu();
+    });
+
+    // ── Video conferencing provider dropdown ──
+    const videoconfWrap = document.getElementById('videoconf-dropdown-wrap');
+    const videoconfBtn = document.getElementById('videoconf-btn');
+    const videoconfMenu = document.getElementById('videoconf-menu');
+    const videoconfLabel = document.getElementById('videoconf-label');
+    const videoconfIconWrap = document.getElementById('videoconf-icon-wrap');
+
+    videoconfBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      videoconfMenu.classList.toggle('open');
+    });
+    videoconfMenu.addEventListener('click', (e) => {
+      const item = e.target.closest('.dropdown-item');
+      if (!item) return;
+      videoconfLabel.textContent = item.dataset.vc;
+      videoconfIconWrap.innerHTML = item.querySelector('.cal-logo').outerHTML;
+      videoconfMenu.querySelectorAll('.dropdown-item').forEach((i) => i.classList.toggle('selected', i === item));
+      videoconfMenu.classList.remove('open');
+    });
+    document.addEventListener('click', (e) => {
+      if (!videoconfWrap.contains(e.target)) videoconfMenu.classList.remove('open');
+    });
+
+    // ── Timezone picker for the calendar grid ──
+    const timezoneWrap = document.getElementById('timezone-dropdown-wrap');
+    const timezoneBtn = document.getElementById('timezone-btn');
+    const timezoneMenu = document.getElementById('timezone-menu');
+    const timezoneLabel = document.getElementById('timezone-label');
+
+    timezoneBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      timezoneMenu.classList.toggle('open');
+    });
+    timezoneMenu.addEventListener('click', (e) => {
+      const item = e.target.closest('.dropdown-item');
+      if (!item) return;
+      timezoneLabel.textContent = item.dataset.tz;
+      timezoneMenu.querySelectorAll('.dropdown-item').forEach((i) => i.classList.toggle('selected', i === item));
+      timezoneMenu.classList.remove('open');
+    });
+    document.addEventListener('click', (e) => {
+      if (!timezoneWrap.contains(e.target)) timezoneMenu.classList.remove('open');
     });
 
     // ── Participants: add a guest by typing + Enter ──
