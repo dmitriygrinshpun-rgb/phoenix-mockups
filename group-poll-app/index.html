@@ -1,21 +1,73 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://images.unsplash.com https://randomuser.me; connect-src 'self' ws: wss:;" />
-    <link rel="icon" type="image/svg+xml" href="/phoenix-mockups/group-poll-app/favicon.svg" />
-    <link rel="apple-touch-icon" href="/phoenix-mockups/group-poll-app/app-icon.svg" />
-    <link rel="manifest" href="/phoenix-mockups/group-poll-app/manifest.webmanifest" />
-    <meta name="theme-color" content="#2B8FE0" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    <title>Doodle</title>
-    <script type="module" crossorigin src="/phoenix-mockups/group-poll-app/assets/index-I7pzYF9p.js"></script>
-    <link rel="stylesheet" crossorigin href="/phoenix-mockups/group-poll-app/assets/index-BVdNuit2.css">
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
-</html>
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doodle: Group poll</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --card: #ffffff; --ink: #242424; --ink-muted: #8a8a8a;
+    --line: #e6e6e6; --primary: #171717; --primary-ink: #ffffff; --danger: #e0433d;
+    --radius-lg: 20px; --radius-sm: 8px;
+    --shadow-card: 0 1px 2px rgba(20,20,20,0.04), 0 20px 45px -18px rgba(20,20,20,0.22);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+  .gate-card {
+    width: 100%; max-width: 340px; background: var(--card); border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card); padding: 28px 26px; text-align: center;
+  }
+  .gate-card .wordmark { display: block; margin-bottom: 14px; font-size: 18px; font-weight: 700; }
+  .gate-card h1 { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+  .gate-card p { font-size: 12.5px; color: var(--ink-muted); margin: 0 0 18px; }
+  .gate-card form { display: flex; flex-direction: column; gap: 10px; }
+  .gate-card input {
+    width: 100%; border: 1px solid var(--line); border-radius: var(--radius-sm);
+    padding: 9px 12px; font-size: 13.5px; text-align: center; outline: none;
+  }
+  .gate-card input:focus { border-color: var(--ink); }
+  .gate-card button {
+    border: none; background: var(--primary); color: var(--primary-ink);
+    border-radius: 999px; padding: 9px 16px; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  }
+  .gate-card button:hover { opacity: 0.88; }
+  .gate-error { font-size: 12px; color: var(--danger); min-height: 16px; margin: 0; }
+</style>
+</head>
+<body>
+
+<div class="gate-card">
+  <span class="wordmark">Doodle</span>
+  <h1>Restricted preview</h1>
+  <p>This is an internal prototype. Enter the password to continue.</p>
+  <form id="gateForm">
+    <input type="password" id="gatePassword" placeholder="Password" autocomplete="off" autofocus />
+    <p class="gate-error" id="gateError"></p>
+    <button type="submit">Continue</button>
+  </form>
+</div>
+
+<script>
+  (function () {
+    var PASSWORD = 'Doodle2026';
+    var KEY = 'gp-preview-unlocked';
+    var alreadyUnlocked = false;
+    try { alreadyUnlocked = localStorage.getItem(KEY) === 'true'; } catch (e) {}
+    if (alreadyUnlocked) { window.location.replace('app.html'); return; }
+    document.getElementById('gateForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var input = document.getElementById('gatePassword');
+      if (input.value === PASSWORD) {
+        try { localStorage.setItem(KEY, 'true'); } catch (e) {}
+        window.location.replace('app.html');
+      } else {
+        document.getElementById('gateError').textContent = 'Incorrect password.';
+        input.value = '';
+        input.focus();
+      }
+    });
+  })();
+</script>
+</body></html>
