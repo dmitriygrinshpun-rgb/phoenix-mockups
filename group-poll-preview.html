@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doodle: Group poll</title>
+<style>
+  /* This prototype commits to a single (light) look on purpose — it's a
+     faithful recreation of a real, light-only product surface, not a
+     from-scratch page, so there is no dark-mode variant to design. */
+  :root {
+    --bg: #f4f5f7;
+    --card: #ffffff;
+    --ink: #242424;
+    --ink-muted: #8a8a8a;
+    --ink-faint: #b7b7b7;
+    --line: #e6e6e6;
+    --fill: #f5f5f6;
+    --fill-strong: #eeeeef;
+    --primary: #171717;
+    --primary-ink: #ffffff;
+    --accent: #0f6ff5;
+    --accent-soft: rgba(15, 111, 245, 0.12);
+    --danger: #e0433d;
+    --radius-lg: 20px;
+    --radius-md: 12px;
+    --radius-sm: 8px;
+    --shadow-card: 0 1px 2px rgba(20, 20, 20, 0.04), 0 20px 45px -18px rgba(20, 20, 20, 0.22);
+    --shadow-pop: 0 10px 30px -8px rgba(20, 20, 20, 0.28);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, select, textarea { font-family: inherit; color: inherit; }
+  button { cursor: pointer; }
+  ::selection { background: var(--accent-soft); }
+
+  .stage {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 20px 40px;
+  }
+  .stage-head {
+    width: 100%;
+    max-width: 980px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .wordmark { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; }
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .layout {
+    width: 100%;
+    max-width: 980px;
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 18px;
+    align-items: start;
+  }
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+    .grid-pane { display: none; }
+  }
+
+  /* ---------- Create panel ---------- */
+  .panel {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    height: 640px;
+    overflow: hidden;
+    position: relative;
+  }
+  .panel-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 18px 90px;
+  }
+  .panel-scroll::-webkit-scrollbar { width: 6px; }
+  .panel-scroll::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+
+  .panel-top {
+    display: flex;
+    justify-content: flex-end;
+    padding-bottom: 10px;
+  }
+  .btn-plain {
+    background: none;
+    border: none;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    padding: 6px 8px;
+    border-radius: 999px;
+  }
+  .btn-plain:hover { background: var(--fill); color: var(--ink); }
+
+  .title-input {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 14px;
+    outline: none;
+  }
+  .title-input:focus { border-color: var(--ink); }
+
+  .row {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 12px 0;
+  }
+  .row-icon {
+    width: 20px; height: 20px; shrink: 0;
+    color: var(--ink-faint);
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 2px;
+  }
+  .row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .rule { border-top: 1px solid var(--line); }
+
+  .section {
+    display: flex; flex-direction: column; gap: 8px;
+    padding: 14px 0;
+  }
+  .section-title {
+    font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .info-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 1px solid var(--ink-faint);
+    color: var(--ink-faint);
+    font-size: 9px; font-weight: 600;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: default;
+  }
+  .info-dot:hover { border-color: var(--ink-muted); color: var(--ink-muted); }
+
+  .select {
+    display: inline-flex; align-items: center; gap: 6px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 7px 8px 7px 10px;
+    font-size: 13px; font-weight: 500;
+    background: var(--card);
+    width: fit-content;
+    position: relative;
+  }
+  .select:hover { border-color: #cfcfcf; }
+  .select svg { color: var(--ink-muted); }
+  .field-full {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    font-size: 13px;
+    background: var(--card);
+  }
+  .field-full:focus, .select:focus-within { outline: none; border-color: var(--ink); }
+
+  .pill-btn {
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 13px; font-weight: 500;
+    color: var(--ink-muted);
+    width: fit-content;
+  }
+  .pill-btn:hover { background: var(--fill); color: var(--ink); }
+
+  .or-divider {
+    display: flex; align-items: center; gap: 10px;
+    color: var(--ink-faint); font-size: 11px; margin: 2px 0;
+  }
+  .or-divider::before, .or-divider::after {
+    content: ""; flex: 1; height: 1px; background: var(--line);
+  }
+
+  .add-time-big {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 16px;
+    background: var(--card);
+    font-size: 15px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .add-time-big:hover { background: var(--fill); }
+
+  .time-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 0;
+  }
+  .time-row span.label { flex: 1; font-size: 13px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .icon-btn {
+    width: 26px; height: 26px; border-radius: var(--radius-sm);
+    background: none; border: none;
+    color: var(--ink-muted);
+    display: flex; align-items: center; justify-content: center;
+    shrink: 0;
+  }
+  .icon-btn:hover { background: var(--fill); color: var(--ink); }
+  .icon-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .icon-btn:disabled:hover { background: none; color: var(--ink-muted); }
+
+  .add-time-small {
+    align-self: flex-start;
+    background: none; border: none;
+    font-size: 13px; font-weight: 500;
+    color: var(--ink);
+    padding: 6px 10px;
+    border-radius: 999px;
+    display: flex; align-items: center; gap: 6px;
+    margin-top: 2px;
+  }
+  .add-time-small:hover { background: var(--fill); }
+
+  .editor {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    padding: 10px;
+    display: flex; flex-direction: column; gap: 8px;
+    margin: 4px 0;
+  }
+  .editor .time-fields { display: flex; align-items: center; gap: 8px; }
+  .editor .time-fields input { flex: 1; min-width: 0; }
+  .editor input[type="date"], .editor input[type="time"] {
+    border: 1px solid var(--line); border-radius: var(--radius-sm);
+    padding: 7px 8px; font-size: 13px; width: 100%;
+  }
+  .editor-actions { display: flex; justify-content: flex-end; gap: 8px; }
+  .btn-ghost-sm { background: none; border: none; font-size: 12.5px; font-weight: 500; color: var(--ink-muted); padding: 6px 10px; border-radius: 999px; }
+  .btn-ghost-sm:hover { background: var(--fill); }
+  .btn-dark-sm { background: var(--primary); color: var(--primary-ink); border: none; font-size: 12.5px; font-weight: 600; padding: 6px 12px; border-radius: 999px; }
+  .btn-dark-sm:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .search-field {
+    display: flex; align-items: center; gap: 7px;
+    border: 1px solid var(--line); border-radius: var(--radius-sm);
+    padding: 7px 10px;
+    position: relative;
+  }
+  .search-field input { border: none; outline: none; flex: 1; font-size: 13px; background: none; }
+  .search-field svg { color: var(--ink-muted); shrink: 0; }
+  .suggest-pop {
+    position: absolute; left: 0; right: 0; top: calc(100% + 4px);
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-md);
+    box-shadow: var(--shadow-pop); z-index: 20; overflow: hidden;
+  }
+  .suggest-item {
+    display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+    font-size: 13px; text-align: left; width: 100%; background: none; border: none;
+  }
+  .suggest-item:hover { background: var(--fill); }
+
+  .avatar {
+    width: 28px; height: 28px; border-radius: 50%; flex: none;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 10.5px; font-weight: 600; overflow: hidden;
+  }
+  .person-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+  .person-meta { flex: 1; min-width: 0; }
+  .person-name { font-size: 13.5px; font-weight: 500; }
+  .person-sub { font-size: 11.5px; color: var(--ink-muted); display: flex; align-items: center; gap: 5px; }
+  .person-actions { display: flex; align-items: center; gap: 2px; }
+
+  .toggle {
+    width: 34px; height: 20px; border-radius: 999px; border: none;
+    background: var(--line); position: relative; flex: none; padding: 0;
+  }
+  .toggle.on { background: var(--primary); }
+  .toggle .knob {
+    position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%;
+    background: #fff; transition: transform .15s ease;
+  }
+  .toggle.on .knob { transform: translateX(14px); }
+
+  .settings-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; border-top: 1px solid var(--line);
+  }
+  .settings-head button.chev {
+    background: none; border: none; color: var(--ink-muted);
+    width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+    border-radius: var(--radius-sm);
+  }
+  .settings-head button.chev:hover { background: var(--fill); }
+  .settings-head .chev svg { transition: transform .15s ease; }
+  .settings-body { display: flex; flex-direction: column; gap: 14px; padding-bottom: 8px; }
+  .field-label { font-size: 12px; color: var(--ink-muted); display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; }
+  .toggle-copy p.t { font-size: 13px; font-weight: 500; }
+  .toggle-copy p.d { font-size: 11.5px; color: var(--ink-muted); margin-top: 2px; }
+
+  .footer {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px 16px;
+    background: linear-gradient(to top, var(--card) 60%, transparent);
+  }
+  .btn-outline {
+    border: 1px solid var(--line); background: var(--card);
+    border-radius: 999px; padding: 9px 18px; font-size: 13.5px; font-weight: 600;
+  }
+  .btn-outline:hover { background: var(--fill); }
+  .btn-primary {
+    border: none; background: var(--primary); color: var(--primary-ink);
+    border-radius: 999px; padding: 9px 20px; font-size: 13.5px; font-weight: 600;
+  }
+  .btn-primary:hover { opacity: 0.88; }
+
+  /* ---------- Grid pane ---------- */
+  .grid-pane {
+    background: var(--card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    padding: 16px 16px 18px;
+    height: 640px;
+    display: flex;
+    flex-direction: column;
+  }
+  .grid-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
+  .grid-head h2 { font-size: 15px; font-weight: 600; }
+  .grid-head span { font-size: 12px; color: var(--ink-muted); }
+  .grid-days {
+    display: grid; grid-template-columns: 44px repeat(7, 1fr);
+    font-size: 11px; color: var(--ink-muted); font-weight: 600;
+    padding-bottom: 6px; border-bottom: 1px solid var(--line);
+    text-align: center;
+  }
+  .grid-days .today { color: var(--ink); }
+  .grid-body-wrap { flex: 1; overflow-y: auto; margin-top: 4px; }
+  .grid-body {
+    display: grid; grid-template-columns: 44px repeat(7, 1fr);
+    position: relative;
+  }
+  .hour-label {
+    font-size: 10.5px; color: var(--ink-faint);
+    text-align: right; padding-right: 8px;
+    transform: translateY(-6px);
+  }
+  .day-col { position: relative; border-left: 1px solid #f1f1f2; }
+  .hour-line { border-top: 1px solid #f1f1f2; height: 40px; }
+  .half-cell {
+    position: absolute; left: 2px; right: 2px; height: 20px;
+    border-radius: 4px; cursor: pointer;
+  }
+  .half-cell:hover { background: rgba(0,0,0,0.035); }
+  .half-cell.selected {
+    background: var(--accent-soft);
+    border-left: 2px dashed rgba(15,111,245,0.5);
+    border-right: 2px dashed rgba(15,111,245,0.5);
+  }
+  .half-cell.selected.first { border-top: 2px dashed rgba(15,111,245,0.5); border-radius: 4px 4px 0 0; }
+  .half-cell.selected.last { border-bottom: 2px dashed rgba(15,111,245,0.5); border-radius: 0 0 4px 4px; }
+  .half-cell .time-tag { font-size: 8.5px; color: var(--accent); padding: 1px 0 0 3px; pointer-events: none; user-select: none; }
+
+  .grid-flash { animation: pulseFlash 0.9s ease-out; }
+  @keyframes pulseFlash {
+    0% { box-shadow: inset 0 0 0 4px rgba(15,111,245,0.55); }
+    60% { box-shadow: inset 0 0 0 4px rgba(15,111,245,0.35); }
+    100% { box-shadow: inset 0 0 0 4px rgba(15,111,245,0); }
+  }
+  @media (prefers-reduced-motion: reduce) { .grid-flash { animation: none; } }
+
+  /* ---------- Preview modal ---------- */
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(20,20,20,0.45);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; padding: 16px;
+  }
+  .modal-card {
+    width: 100%; max-width: 400px; max-height: 85vh;
+    background: var(--card); border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-pop);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 12px; border-bottom: 1px solid var(--line); }
+  .badge { background: var(--fill); color: var(--ink-muted); font-size: 10.5px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; }
+  .modal-body { padding: 18px; overflow-y: auto; display: flex; flex-direction: column; gap: 18px; }
+  .host-stack { display: flex; }
+  .host-stack .avatar { border: 2px solid var(--card); margin-left: -8px; }
+  .host-stack .avatar:first-child { margin-left: 0; }
+  .modal-title { font-size: 19px; font-weight: 700; letter-spacing: -0.01em; }
+  .time-option { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; font-size: 13px; }
+  .time-option .dot { width: 15px; height: 15px; border-radius: 50%; border: 2px solid #d6d6d6; flex: none; }
+  .modal-foot { padding: 12px 18px 16px; border-top: 1px solid var(--line); }
+  .modal-foot p { font-size: 11px; color: var(--ink-muted); text-align: center; }
+
+  .toast {
+    position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(12px);
+    background: var(--primary); color: var(--primary-ink); font-size: 13px; font-weight: 500;
+    padding: 10px 18px; border-radius: 999px; box-shadow: var(--shadow-pop);
+    opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease;
+    z-index: 200;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  svg { display: block; }
+
+  /* ---------- Password gate ---------- */
+  #gate {
+    position: fixed; inset: 0; z-index: 999;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  #gate.hidden { display: none; }
+  .gate-card {
+    width: 100%; max-width: 340px;
+    background: var(--card); border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    padding: 28px 26px;
+    text-align: center;
+  }
+  .gate-card .wordmark { display: block; margin-bottom: 14px; font-size: 18px; }
+  .gate-card h1 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .gate-card p { font-size: 12.5px; color: var(--ink-muted); margin-bottom: 18px; }
+  .gate-card form { display: flex; flex-direction: column; gap: 10px; }
+  .gate-card input {
+    width: 100%; border: 1px solid var(--line); border-radius: var(--radius-sm);
+    padding: 9px 12px; font-size: 13.5px; text-align: center; outline: none;
+  }
+  .gate-card input:focus { border-color: var(--ink); }
+  .gate-card button {
+    border: none; background: var(--primary); color: var(--primary-ink);
+    border-radius: 999px; padding: 9px 16px; font-size: 13.5px; font-weight: 600;
+  }
+  .gate-card button:hover { opacity: 0.88; }
+  .gate-error { font-size: 12px; color: var(--danger); min-height: 16px; }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-card">
+    <span class="wordmark">Doodle</span>
+    <h1>Restricted preview</h1>
+    <p>This is an internal prototype. Enter the password to continue.</p>
+    <form id="gateForm">
+      <input type="password" id="gatePassword" placeholder="Password" autocomplete="off" />
+      <p class="gate-error" id="gateError"></p>
+      <button type="submit">Continue</button>
+    </form>
+  </div>
+</div>
+<script>
+  (function () {
+    var PASSWORD = 'Doodle2026';
+    var KEY = 'gp-preview-unlocked';
+    var gate = document.getElementById('gate');
+    var alreadyUnlocked = false;
+    try { alreadyUnlocked = localStorage.getItem(KEY) === 'true'; } catch (e) {}
+    if (alreadyUnlocked) { gate.classList.add('hidden'); }
+    document.getElementById('gateForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var input = document.getElementById('gatePassword');
+      if (input.value === PASSWORD) {
+        try { localStorage.setItem(KEY, 'true'); } catch (e) {}
+        gate.classList.add('hidden');
+      } else {
+        document.getElementById('gateError').textContent = 'Incorrect password.';
+        input.value = '';
+        input.focus();
+      }
+    });
+  })();
+</script>
+
+<div class="stage">
+  <div class="stage-head">
+    <span class="wordmark">Doodle</span>
+    <span class="eyebrow">Group poll · create flow prototype</span>
+  </div>
+
+  <div class="layout">
+    <div class="panel">
+      <div class="panel-scroll" id="panelScroll">
+        <div class="panel-top">
+          <button class="btn-plain">Close</button>
+        </div>
+        <input class="title-input" id="titleInput" value="Group poll" />
+        <div id="dynamicSections"></div>
+      </div>
+      <div class="footer">
+        <button class="btn-outline" id="previewBtn">Preview</button>
+        <button class="btn-primary" id="createBtn">Create</button>
+      </div>
+    </div>
+
+    <div class="grid-pane">
+      <div class="grid-head">
+        <h2>Week of Sep 7</h2>
+        <span id="gridHint">Click a cell to propose a time</span>
+      </div>
+      <div class="grid-days" id="gridDays"></div>
+      <div class="grid-body-wrap">
+        <div class="grid-body" id="gridBody"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modalRoot"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+  // ---------------------------------------------------------------
+  // Icons (inline, theme-colored via currentColor)
+  // ---------------------------------------------------------------
+  const ICONS = {
+    clock: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+    chevDown: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>',
+    plus: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>',
+    pencil: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+    x: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+    search: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>',
+    eye: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>',
+    eyeOff: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 19c-7 0-11-7-11-7a21 21 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 5c7 0 11 7 11 7a21.4 21.4 0 0 1-2.36 3.36M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>',
+    crown: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m2 18 2-11 5 5 3-8 3 8 5-5 2 11Z"/></svg>',
+    calendar: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>',
+    globe: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z"/></svg>',
+    video: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="m22 8-6 4 6 4Z"/></svg>',
+    pin: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z"/><circle cx="12" cy="9" r="2.3"/></svg>',
+    bell: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>',
+    sliders: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h13M21 18h0"/><circle cx="17" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>',
+  };
+
+  // ---------------------------------------------------------------
+  // Directory (mock people for search/autocomplete)
+  // ---------------------------------------------------------------
+  const DIRECTORY = [
+    { name: 'Sarah Chen', email: 'sarah.chen@company.com', color: '#8b5cf6' },
+    { name: 'Marcus Johnson', email: 'marcus.j@company.com', color: '#ef4444' },
+    { name: 'Priya Patel', email: 'priya.patel@company.com', color: '#ec4899' },
+    { name: 'David Kim', email: 'david.kim@company.com', color: '#14b8a6' },
+    { name: 'Alex Morgan', email: 'alex.morgan@company.com', color: '#3b82f6' },
+    { name: 'Sofia Martinez', email: 'sofia.m@company.com', color: '#06b6d4' },
+  ];
+  function initials(name) { return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2); }
+
+  const START_HOUR = 7, END_HOUR = 19, TOTAL_HALF = (END_HOUR - START_HOUR) * 2;
+  const DAY_LABELS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  const today = new Date(2026, 8, 11); // Fri, Sep 11 2026 — matches the app's mock "today"
+  const weekStart = new Date(today); weekStart.setDate(today.getDate() - today.getDay());
+  const weekDates = Array.from({ length: 7 }, (_, i) => { const d = new Date(weekStart); d.setDate(weekStart.getDate() + i); return d; });
+
+  function timeStr(halfIdx) {
+    const mins = START_HOUR * 60 + halfIdx * 30;
+    let h = Math.floor(mins / 60), m = mins % 60;
+    const period = h >= 12 ? 'pm' : 'am';
+    const h12 = h % 12 === 0 ? 12 : h % 12;
+    return m === 0 ? `${h12} ${period}` : `${h12}:${String(m).padStart(2, '0')} ${period}`;
+  }
+  function hhmm(halfIdx) {
+    const mins = START_HOUR * 60 + halfIdx * 30;
+    return `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
+  }
+  function dayLabel(dayIdx) {
+    const d = weekDates[dayIdx];
+    return `${DAY_LABELS[dayIdx][0]}${DAY_LABELS[dayIdx].slice(1).toLowerCase()}, ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+  }
+  function toISO(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+  function fmt12(hhmmStr) {
+    const [h, m] = hhmmStr.split(':').map(Number);
+    const period = h >= 12 ? 'pm' : 'am';
+    const h12 = h % 12 === 0 ? 12 : h % 12;
+    return m === 0 ? `${h12} ${period}` : `${h12}:${String(m).padStart(2, '0')} ${period}`;
+  }
+  function labelForDate(dateISO, start, end) {
+    const [y,mo,da] = dateISO.split('-').map(Number);
+    const d = new Date(y, mo-1, da);
+    const wd = d.toLocaleDateString('en-US', { weekday: 'short' });
+    const md = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `${wd}, ${md} · ${fmt12(start)} → ${fmt12(end)}`;
+  }
+
+  // ---------------------------------------------------------------
+  // State
+  // ---------------------------------------------------------------
+  const state = {
+    duration: '60',
+    customMinutes: 30,
+    gridSlots: new Set(),          // "dayIdx-halfIdx"
+    manualTimes: [],               // { id, date, start, end }
+    editingId: null,               // entry id | "new" | null
+    editingIsGrid: false,
+    participants: [],              // { id, name, email, color, role }
+    participantInput: '',
+    hosts: [{ id: 'organizer', name: 'Elena Marchetti', color: '#64B5F6', role: 'Organizer', hidden: false }],
+    hostInput: '',
+    description: '',
+    pollLink: 'my-test-poll',
+    pollSettingsOpen: false,
+    advancedOpen: false,
+    timezone: '(GMT+02:00) Central European Time',
+    video: 'Google Meet',
+    location: '',
+    calendar: 'Work calendar',
+    deadlineOn: true,
+    deadlineDate: '2026-09-18',
+    remindersOn: false,
+    hideParticipantList: false,
+    maxParticipants: 'No maximum',
+    showPreview: false,
+  };
+
+  const DURATIONS = [
+    ['30', '30 min'], ['60', '60 min'], ['90', '90 min'], ['120', '120 min'],
+    ['allday', 'All day'], ['custom', 'Custom'],
+  ];
+
+  function durationMinutes() {
+    if (state.duration === 'allday') return -1;
+    if (state.duration === 'custom') return state.customMinutes;
+    return parseInt(state.duration, 10);
+  }
+  function blockHalfHours() {
+    const m = durationMinutes();
+    if (m < 0) return TOTAL_HALF;
+    return Math.max(1, Math.round(m / 30));
+  }
+
+  function entries() {
+    const grid = [];
+    const byDay = {};
+    for (const key of state.gridSlots) {
+      const [d, h] = key.split('-').map(Number);
+      (byDay[d] ||= []).push(h);
+    }
+    for (const d of Object.keys(byDay)) {
+      const idxs = byDay[d].sort((a,b)=>a-b);
+      let start = idxs[0], end = idxs[0];
+      const blocks = [];
+      for (let i = 1; i < idxs.length; i++) {
+        if (idxs[i] === end + 1) end = idxs[i];
+        else { blocks.push([start, end]); start = idxs[i]; end = idxs[i]; }
+      }
+      blocks.push([start, end]);
+      for (const [s, e] of blocks) {
+        grid.push({
+          id: `g-${d}-${s}-${e}`,
+          label: `${dayLabel(+d)} · ${timeStr(s)} → ${timeStr(e + 1)}`,
+          isGrid: true, dayIdx: +d, startHalf: s, endHalf: e + 1,
+        });
+      }
+    }
+    const manual = state.manualTimes.map(t => ({
+      id: t.id, label: labelForDate(t.date, t.start, t.end), isGrid: false, raw: t,
+    }));
+    return [...grid, ...manual];
+  }
+
+  function removeGridBlock(dayIdx, s, e) {
+    for (let i = s; i < e; i++) state.gridSlots.delete(`${dayIdx}-${i}`);
+  }
+
+  function newEntryDefaults() {
+    const now = new Date();
+    now.setMinutes(Math.ceil(now.getMinutes() / 30) * 30, 0, 0);
+    const mins = durationMinutes();
+    const dur = mins < 0 ? 12 * 60 : (mins || 30);
+    const end = new Date(now.getTime() + dur * 60000);
+    const pad = n => String(n).padStart(2, '0');
+    return {
+      date: toISO(now),
+      start: `${pad(now.getHours())}:${pad(now.getMinutes())}`,
+      end: `${pad(end.getHours())}:${pad(end.getMinutes())}`,
+    };
+  }
+
+  // ---------------------------------------------------------------
+  // Render: dynamic sections
+  // ---------------------------------------------------------------
+  function el(html) { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; }
+
+  function renderTimeRow(entry) {
+    if (state.editingId === entry.id) {
+      const d = entry.isGrid
+        ? { date: toISO(weekDates[entry.dayIdx]), start: hhmm(entry.startHalf), end: hhmm(entry.endHalf) }
+        : { date: entry.raw.date, start: entry.raw.start, end: entry.raw.end };
+      return renderEditor(d, (date, start, end) => {
+        if (entry.isGrid) removeGridBlock(entry.dayIdx, entry.startHalf, entry.endHalf);
+        state.manualTimes.push({ id: 't-' + Date.now(), date, start, end });
+        state.editingId = null;
+        renderAll();
+      });
+    }
+    const row = document.createElement('div');
+    row.className = 'time-row';
+    row.innerHTML = `
+      <span class="label">${entry.label}</span>
+      <button class="icon-btn" title="Edit time" data-edit="${entry.id}">${ICONS.pencil}</button>
+      <button class="icon-btn" title="Remove time" data-remove="${entry.id}">${ICONS.x}</button>
+    `;
+    row.querySelector('[data-edit]').onclick = () => { state.editingId = entry.id; renderAll(); };
+    row.querySelector('[data-remove]').onclick = () => {
+      if (entry.isGrid) removeGridBlock(entry.dayIdx, entry.startHalf, entry.endHalf);
+      else state.manualTimes = state.manualTimes.filter(t => t.id !== entry.id);
+      renderAll();
+    };
+    return row;
+  }
+
+  function renderEditor(defaults, onSave) {
+    const wrap = document.createElement('div');
+    wrap.className = 'editor';
+    wrap.innerHTML = `
+      <input type="date" value="${defaults.date}" />
+      <div class="time-fields">
+        <input type="time" value="${defaults.start}" />
+        <span style="color:var(--ink-muted);font-size:12px;">→</span>
+        <input type="time" value="${defaults.end}" />
+      </div>
+      <div class="editor-actions">
+        <button class="btn-ghost-sm" data-cancel>Cancel</button>
+        <button class="btn-dark-sm" data-save>Save</button>
+      </div>
+    `;
+    const [dateInput] = wrap.querySelectorAll('input[type="date"]');
+    const [startInput, endInput] = wrap.querySelectorAll('input[type="time"]');
+    const saveBtn = wrap.querySelector('[data-save]');
+    function validate() { saveBtn.disabled = !dateInput.value || !startInput.value || !endInput.value || endInput.value <= startInput.value; }
+    [dateInput, startInput, endInput].forEach(i => i.addEventListener('input', validate));
+    validate();
+    wrap.querySelector('[data-cancel]').onclick = () => { state.editingId = null; renderAll(); };
+    saveBtn.onclick = () => onSave(dateInput.value, startInput.value, endInput.value);
+    return wrap;
+  }
+
+  function renderTimesSection() {
+    const list = entries();
+    const container = document.createElement('div');
+
+    // Duration + click-grid row
+    const row1 = el(`<div class="row"><div class="row-icon">${ICONS.clock}</div><div class="row-body"></div></div>`);
+    const body1 = row1.querySelector('.row-body');
+
+    const selectWrap = el(`
+      <div class="select" id="durationSelect">
+        <span id="durationLabel"></span>${ICONS.chevDown}
+        <select id="durationNative" style="position:absolute;inset:0;opacity:0;cursor:pointer;">
+          ${DURATIONS.map(([v, l]) => `<option value="${v}" ${v===state.duration?'selected':''}>${l}</option>`).join('')}
+        </select>
+      </div>
+    `);
+    selectWrap.querySelector('#durationLabel').textContent = DURATIONS.find(d => d[0] === state.duration)[1];
+    selectWrap.querySelector('#durationNative').onchange = (e) => { state.duration = e.target.value; renderAll(); };
+    body1.appendChild(selectWrap);
+
+    if (state.duration === 'custom') {
+      const custom = el(`<input class="field-full" type="number" min="1" placeholder="Minutes" style="max-width:140px;" value="${state.customMinutes}" />`);
+      custom.oninput = (e) => { state.customMinutes = Math.max(1, parseInt(e.target.value, 10) || 1); };
+      body1.appendChild(custom);
+    }
+
+    const clickGridBtn = el(`<button class="pill-btn">Click the calendar grid to add times.</button>`);
+    clickGridBtn.onclick = () => {
+      const pane = document.querySelector('.grid-pane');
+      pane.classList.remove('grid-flash'); void pane.offsetWidth; pane.classList.add('grid-flash');
+    };
+    body1.appendChild(clickGridBtn);
+
+    if (list.length === 0 && state.editingId !== 'new') {
+      const or = el(`<div class="or-divider">or</div>`);
+      body1.appendChild(or);
+      const big = el(`<button class="add-time-big">${ICONS.plus}Add time</button>`);
+      big.onclick = () => { state.editingId = 'new'; renderAll(); };
+      body1.appendChild(big);
+    }
+    container.appendChild(row1);
+
+    // Proposed times — aligned flush-left like Participants/Hosts
+    if (list.length > 0 || state.editingId === 'new') {
+      const sec = el(`<div class="section"><span class="section-title">Proposed times <span class="info-dot" title="The times participants will be asked to vote on.">i</span></span></div>`);
+      const listWrap = document.createElement('div');
+      list.forEach(entry => listWrap.appendChild(renderTimeRow(entry)));
+      if (state.editingId === 'new') {
+        listWrap.appendChild(renderEditor(newEntryDefaults(), (date, start, end) => {
+          state.manualTimes.push({ id: 't-' + Date.now(), date, start, end });
+          state.editingId = null; renderAll();
+        }));
+      }
+      if (list.length > 0 && state.editingId === null) {
+        const small = el(`<button class="add-time-small">${ICONS.plus}Add time</button>`);
+        small.onclick = () => { state.editingId = 'new'; renderAll(); };
+        listWrap.appendChild(small);
+      }
+      sec.appendChild(listWrap);
+      container.appendChild(sec);
+    }
+    return container;
+  }
+
+  function renderPersonRow(person, { onToggleRole, onRemove, roleLabels, showRemove = true }) {
+    const row = document.createElement('div');
+    row.className = 'person-row';
+    row.innerHTML = `
+      <div class="avatar" style="background:${person.color}">${initials(person.name)}</div>
+      <div class="person-meta">
+        <div class="person-name">${person.name}</div>
+        <div class="person-sub">${roleLabels(person)}</div>
+      </div>
+      <div class="person-actions"></div>
+    `;
+    const actions = row.querySelector('.person-actions');
+    if (onToggleRole) {
+      const btn = el(`<button class="icon-btn" title="${onToggleRole.title(person)}">${onToggleRole.icon(person)}</button>`);
+      btn.onclick = () => onToggleRole.run(person);
+      actions.appendChild(btn);
+    }
+    if (showRemove) {
+      const rm = el(`<button class="icon-btn" title="Remove">${ICONS.x}</button>`);
+      rm.onclick = onRemove;
+      actions.appendChild(rm);
+    }
+    return row;
+  }
+
+  function renderSearchField({ placeholder, value, onInput, onPick, excludeEmails, colorSeed }) {
+    const wrap = document.createElement('div');
+    wrap.style.position = 'relative';
+    wrap.innerHTML = `<div class="search-field">${ICONS.search}<input placeholder="${placeholder}" value="${value}" /></div>`;
+    const input = wrap.querySelector('input');
+    input.oninput = (e) => { onInput(e.target.value); renderAll(); };
+    if (value.trim()) {
+      const matches = DIRECTORY.filter(p => !excludeEmails.has(p.email) &&
+        (p.name.toLowerCase().includes(value.toLowerCase()) || p.email.toLowerCase().includes(value.toLowerCase())));
+      if (matches.length) {
+        const pop = document.createElement('div');
+        pop.className = 'suggest-pop';
+        matches.forEach(p => {
+          const item = el(`<button class="suggest-item"><span class="avatar" style="width:24px;height:24px;font-size:9px;background:${p.color}">${initials(p.name)}</span><span>${p.name}</span></button>`);
+          item.onclick = () => onPick(p);
+          pop.appendChild(item);
+        });
+        wrap.appendChild(pop);
+      }
+    }
+    return wrap;
+  }
+
+  function renderParticipantsSection() {
+    const sec = el(`<div class="section"><span class="section-title">Participants <span class="info-dot" title="People invited to vote on the proposed times.">i</span></span></div>`);
+    state.participants.forEach(p => {
+      sec.appendChild(renderPersonRow(p, {
+        roleLabels: (pp) => pp.role,
+        onToggleRole: {
+          icon: () => ICONS.crown, // reuse a neutral tag icon not needed; using required/optional text button instead
+          title: (pp) => pp.role === 'Optional' ? 'Make required' : 'Make optional',
+          run: (pp) => { pp.role = pp.role === 'Optional' ? 'Required' : 'Optional'; renderAll(); },
+        },
+        onRemove: () => { state.participants = state.participants.filter(x => x.id !== p.id); renderAll(); },
+      }));
+    });
+    const emails = new Set(state.participants.map(p => p.email));
+    sec.appendChild(renderSearchField({
+      placeholder: 'Add guests (optional)',
+      value: state.participantInput,
+      onInput: (v) => { state.participantInput = v; },
+      excludeEmails: emails,
+      onPick: (p) => {
+        state.participants.push({ id: 'p-' + Date.now(), name: p.name, email: p.email, color: p.color, role: 'Required' });
+        state.participantInput = ''; renderAll();
+      },
+    }));
+    return sec;
+  }
+
+  function renderHostsSection() {
+    const sec = el(`<div class="section"><span class="section-title">Hosts <span class="info-dot" title="Co-hosts get full, equal rights to manage this poll. All hosts are shown to participants as organizers, unless hidden.">i</span></span></div>`);
+    const canHide = state.hosts.length > 1;
+    state.hosts.forEach(h => {
+      const row = document.createElement('div');
+      row.className = 'person-row';
+      row.innerHTML = `
+        <div class="avatar" style="background:${h.color}">${initials(h.name)}</div>
+        <div class="person-meta">
+          <div class="person-name">${h.name}</div>
+          <div class="person-sub">${ICONS.crown} ${h.role}${h.hidden ? ' · Hidden from participants' : ''}</div>
+        </div>
+        <div class="person-actions"></div>
+      `;
+      if (h.hidden) row.querySelector('.person-meta').style.opacity = '0.5';
+      const actions = row.querySelector('.person-actions');
+      const eyeBtn = el(`<button class="icon-btn" ${canHide ? '' : 'disabled'} title="${canHide ? (h.hidden ? 'Show to participants' : 'Hide from participants') : 'Add a co-host before hiding this host — a poll needs at least one visible host.'}">${h.hidden ? ICONS.eyeOff : ICONS.eye}</button>`);
+      eyeBtn.onclick = () => { if (!canHide) return; h.hidden = !h.hidden; renderAll(); };
+      actions.appendChild(eyeBtn);
+      if (h.role === 'Co-host') {
+        const rm = el(`<button class="icon-btn" title="Remove co-host">${ICONS.x}</button>`);
+        rm.onclick = () => {
+          state.hosts = state.hosts.filter(x => x.id !== h.id);
+          if (state.hosts.length === 1) state.hosts[0].hidden = false;
+          renderAll();
+        };
+        actions.appendChild(rm);
+      }
+      sec.appendChild(row);
+    });
+    const emails = new Set(state.hosts.map(h => h.email).filter(Boolean));
+    sec.appendChild(renderSearchField({
+      placeholder: 'Add co-host by name or email',
+      value: state.hostInput,
+      onInput: (v) => { state.hostInput = v; },
+      excludeEmails: emails,
+      onPick: (p) => {
+        state.hosts.push({ id: 'h-' + Date.now(), name: p.name, email: p.email, color: p.color, role: 'Co-host', hidden: false });
+        state.hostInput = ''; renderAll();
+      },
+    }));
+    return sec;
+  }
+
+  function renderDetailsSection() {
+    const sec = el(`<div class="section"><span class="section-title">Group poll details <span class="info-dot" title="Basic info participants will see when they open your poll.">i</span></span></div>`);
+    const desc = el(`<textarea class="field-full" rows="2" placeholder="Add description">${state.description}</textarea>`);
+    desc.oninput = (e) => { state.description = e.target.value; };
+    sec.appendChild(desc);
+    const link = el(`<div class="search-field"><span style="color:var(--ink-muted);font-size:13px;">doodle.com/gp/</span><input value="${state.pollLink}" style="font-weight:500;" /></div>`);
+    link.querySelector('input').oninput = (e) => { state.pollLink = e.target.value; };
+    sec.appendChild(link);
+    return sec;
+  }
+
+  function renderSettingsHeader(title, tooltip, open, onToggle) {
+    const head = el(`
+      <div class="settings-head">
+        <span class="section-title">${title} <span class="info-dot" title="${tooltip}">i</span></span>
+        <button class="chev">${ICONS.chevDown}</button>
+      </div>
+    `);
+    const chevSvg = head.querySelector('.chev svg');
+    chevSvg.style.transform = open ? 'rotate(0deg)' : 'rotate(-90deg)';
+    head.querySelector('button').onclick = onToggle;
+    head.querySelector('.section-title').firstChild.nodeType; // noop
+    return head;
+  }
+
+  function renderPollSettings() {
+    const wrap = document.createElement('div');
+    wrap.appendChild(renderSettingsHeader('Poll settings', 'Configure the timezone, calendar, video conferencing, and location for this poll.', state.pollSettingsOpen, () => { state.pollSettingsOpen = !state.pollSettingsOpen; renderAll(); }));
+    if (state.pollSettingsOpen) {
+      const body = el(`<div class="settings-body"></div>`);
+
+      const tzRow = el(`<div class="row" style="padding-top:0;"><div class="row-icon">${ICONS.globe}</div><div class="row-body"></div></div>`);
+      const tzSelectWrap = el(`<div class="select" style="width:100%;"><span style="flex:1;text-align:left;">${state.timezone}</span>${ICONS.chevDown}<select style="position:absolute;inset:0;opacity:0;">
+          ${['(GMT+02:00) Central European Time', '(GMT+00:00) Coordinated Universal Time', '(GMT-08:00) Pacific Standard Time', '(GMT-05:00) Eastern Standard Time'].map(t => `<option ${t===state.timezone?'selected':''}>${t}</option>`).join('')}
+        </select></div>`);
+      tzSelectWrap.querySelector('select').onchange = (e) => { state.timezone = e.target.value; renderAll(); };
+      tzRow.querySelector('.row-body').appendChild(tzSelectWrap);
+      body.appendChild(tzRow);
+
+      const videoRow = el(`<div class="row"><div class="row-icon">${ICONS.video}</div><div class="row-body"></div></div>`);
+      const videoSelectWrap = el(`<div class="select" style="width:100%;"><span style="flex:1;text-align:left;">${state.video}</span>${ICONS.chevDown}<select style="position:absolute;inset:0;opacity:0;">
+          ${['Google Meet', 'Zoom', 'Microsoft Teams', 'None'].map(v => `<option ${v===state.video?'selected':''}>${v}</option>`).join('')}
+        </select></div>`);
+      videoSelectWrap.querySelector('select').onchange = (e) => { state.video = e.target.value; renderAll(); };
+      videoRow.querySelector('.row-body').appendChild(videoSelectWrap);
+      body.appendChild(videoRow);
+
+      const locRow = el(`<div class="row"><div class="row-icon">${ICONS.pin}</div><div class="row-body"></div></div>`);
+      const locInput = el(`<input class="field-full" placeholder="Add location" value="${state.location}" />`);
+      locInput.oninput = (e) => { state.location = e.target.value; };
+      locRow.querySelector('.row-body').appendChild(locInput);
+      body.appendChild(locRow);
+
+      const calRow = el(`<div class="row"><div class="row-icon">${ICONS.calendar}</div><div class="row-body"></div></div>`);
+      const calSelectWrap = el(`<div class="select" style="width:100%;"><span style="flex:1;text-align:left;">${state.calendar}</span>${ICONS.chevDown}<select style="position:absolute;inset:0;opacity:0;">
+          ${['Work calendar', 'Personal calendar'].map(v => `<option ${v===state.calendar?'selected':''}>${v}</option>`).join('')}
+        </select></div>`);
+      calSelectWrap.querySelector('select').onchange = (e) => { state.calendar = e.target.value; renderAll(); };
+      calRow.querySelector('.row-body').appendChild(calSelectWrap);
+      body.appendChild(calRow);
+
+      wrap.appendChild(body);
+    }
+    return wrap;
+  }
+
+  function renderToggleRow(icon, title, desc, checked, onChange, extra) {
+    const row = el(`<div class="row"><div class="row-icon">${icon}</div><div class="row-body"></div></div>`);
+    const body = row.querySelector('.row-body');
+    const top = el(`
+      <div class="toggle-row">
+        <div class="toggle-copy"><p class="t">${title}</p>${desc ? `<p class="d">${desc}</p>` : ''}</div>
+        <button class="toggle ${checked ? 'on' : ''}"><span class="knob"></span></button>
+      </div>
+    `);
+    top.querySelector('.toggle').onclick = () => onChange(!checked);
+    body.appendChild(top);
+    if (extra) body.appendChild(extra);
+    return row;
+  }
+
+  function renderAdvancedOptions() {
+    const wrap = document.createElement('div');
+    wrap.appendChild(renderSettingsHeader('Advanced options', 'Optional rules that change how invitees can respond to this poll.', state.advancedOpen, () => { state.advancedOpen = !state.advancedOpen; renderAll(); }));
+    if (state.advancedOpen) {
+      const body = el(`<div class="settings-body"></div>`);
+      body.appendChild(renderToggleRow(ICONS.bell, 'Send automatic reminders', "We'll email invited participants who don't respond.", state.remindersOn, (v) => { state.remindersOn = v; renderAll(); }));
+
+      let deadlineExtra = null;
+      if (state.deadlineOn) {
+        deadlineExtra = el(`<input class="field-full" type="date" value="${state.deadlineDate}" style="max-width:180px;" />`);
+        deadlineExtra.oninput = (e) => { state.deadlineDate = e.target.value; };
+      }
+      body.appendChild(renderToggleRow(ICONS.clock, 'Set a deadline', "Motivate participants to respond sooner. After the deadline, we won't accept any responses.", state.deadlineOn, (v) => { state.deadlineOn = v; renderAll(); }, deadlineExtra));
+
+      body.appendChild(renderToggleRow(ICONS.eyeOff, 'Hide participant list', "Only you will be able to see participants' personal details.", state.hideParticipantList, (v) => { state.hideParticipantList = v; renderAll(); }));
+
+      const maxRow = el(`<div class="row"><div class="row-icon">${ICONS.sliders}</div><div class="row-body"></div></div>`);
+      const maxBody = maxRow.querySelector('.row-body');
+      maxBody.appendChild(el(`<p style="font-size:13px;font-weight:500;">Limit how many participants can select a time</p>`));
+      const maxSelectWrap = el(`<div class="select"><span></span>${ICONS.chevDown}<select style="position:absolute;inset:0;opacity:0;">
+          ${['No maximum','1','2','3','5','10'].map(v => `<option ${v===state.maxParticipants?'selected':''}>${v}</option>`).join('')}
+        </select></div>`);
+      maxSelectWrap.querySelector('span').textContent = state.maxParticipants;
+      maxSelectWrap.querySelector('select').onchange = (e) => { state.maxParticipants = e.target.value; renderAll(); };
+      maxBody.appendChild(maxSelectWrap);
+      maxBody.appendChild(el(`<p style="font-size:11.5px;color:var(--ink-muted);">We'll remove a time when it hits the participant limit.</p>`));
+      body.appendChild(maxRow);
+
+      wrap.appendChild(body);
+    }
+    return wrap;
+  }
+
+  function renderAll() {
+    const host = document.getElementById('dynamicSections');
+    host.innerHTML = '';
+    host.appendChild(renderTimesSection());
+    host.appendChild(el('<div class="rule"></div>'));
+    host.appendChild(renderParticipantsSection());
+    host.appendChild(el('<div class="rule"></div>'));
+    host.appendChild(renderHostsSection());
+    host.appendChild(el('<div class="rule"></div>'));
+    host.appendChild(renderDetailsSection());
+    host.appendChild(renderPollSettings());
+    host.appendChild(renderAdvancedOptions());
+    renderGrid();
+    renderModal();
+  }
+
+  // ---------------------------------------------------------------
+  // Calendar grid pane
+  // ---------------------------------------------------------------
+  function renderGridDaysHeader() {
+    const wrap = document.getElementById('gridDays');
+    wrap.innerHTML = '<div></div>' + weekDates.map((d, i) => {
+      const isToday = toISO(d) === toISO(today);
+      return `<div class="${isToday ? 'today' : ''}">${DAY_LABELS[i]}<br/><span style="font-size:13px;">${d.getDate()}</span></div>`;
+    }).join('');
+  }
+
+  function renderGrid() {
+    const body = document.getElementById('gridBody');
+    body.innerHTML = '';
+    const hourLabels = document.createElement('div');
+    for (let h = START_HOUR; h <= END_HOUR; h++) {
+      const lbl = document.createElement('div');
+      lbl.className = 'hour-label';
+      lbl.style.height = '40px';
+      lbl.textContent = h === START_HOUR ? '' : timeStr((h - START_HOUR) * 2).replace(' ', '');
+      hourLabels.appendChild(lbl);
+    }
+    body.appendChild(hourLabels);
+
+    for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
+      const col = document.createElement('div');
+      col.className = 'day-col';
+      col.style.height = `${(END_HOUR - START_HOUR) * 40}px`;
+      for (let h = 0; h < END_HOUR - START_HOUR; h++) {
+        const line = document.createElement('div');
+        line.className = 'hour-line';
+        col.appendChild(line);
+      }
+      for (let half = 0; half < TOTAL_HALF; half++) {
+        const key = `${dayIdx}-${half}`;
+        const selected = state.gridSlots.has(key);
+        const prevSel = state.gridSlots.has(`${dayIdx}-${half - 1}`);
+        const nextSel = state.gridSlots.has(`${dayIdx}-${half + 1}`);
+        const cell = document.createElement('div');
+        cell.className = 'half-cell' + (selected ? ' selected' : '') + (selected && !prevSel ? ' first' : '') + (selected && !nextSel ? ' last' : '');
+        cell.style.top = `${half * 20}px`;
+        if (selected && !prevSel) cell.innerHTML = `<span class="time-tag">${timeStr(half)}</span>`;
+        cell.onclick = () => {
+          if (state.gridSlots.has(key)) {
+            let s = half, e = half;
+            while (state.gridSlots.has(`${dayIdx}-${s - 1}`)) s--;
+            while (state.gridSlots.has(`${dayIdx}-${e + 1}`)) e++;
+            for (let i = s; i <= e; i++) state.gridSlots.delete(`${dayIdx}-${i}`);
+          } else {
+            const isAllDay = durationMinutes() < 0;
+            const count = blockHalfHours();
+            const start = isAllDay ? 0 : half;
+            for (let i = 0; i < count && start + i < TOTAL_HALF; i++) state.gridSlots.add(`${dayIdx}-${start + i}`);
+          }
+          renderAll();
+        };
+        col.appendChild(cell);
+      }
+      body.appendChild(col);
+    }
+  }
+
+  // ---------------------------------------------------------------
+  // Preview modal
+  // ---------------------------------------------------------------
+  function renderModal() {
+    const root = document.getElementById('modalRoot');
+    root.innerHTML = '';
+    if (!state.showPreview) return;
+    const visibleHosts = state.hosts.filter(h => !h.hidden);
+    const names = visibleHosts.map(h => h.name);
+    const namesJoined = names.length <= 1 ? (names[0] || '') : names.length === 2 ? `${names[0]} and ${names[1]}` : `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
+    const list = entries();
+    const backdrop = el(`<div class="modal-backdrop"></div>`);
+    backdrop.onclick = (e) => { if (e.target === backdrop) { state.showPreview = false; renderAll(); } };
+    const card = el(`
+      <div class="modal-card">
+        <div class="modal-head">
+          <span class="badge">Preview</span>
+          <button class="icon-btn" id="modalClose">${ICONS.x}</button>
+        </div>
+        <div class="modal-body">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div class="host-stack">
+              ${visibleHosts.slice(0,4).map(h => `<div class="avatar" style="background:${h.color}">${initials(h.name)}</div>`).join('')}
+            </div>
+            <span style="font-size:13px;color:var(--ink-muted);display:flex;align-items:center;gap:6px;">${ICONS.crown}${names.length ? `Hosted by ${namesJoined}` : 'No hosts visible to participants'}</span>
+          </div>
+          <div class="modal-title">${document.getElementById('titleInput').value || 'Group poll'}</div>
+          <div>
+            <p style="font-size:12px;font-weight:600;color:var(--ink-muted);display:flex;align-items:center;gap:6px;margin-bottom:8px;">${ICONS.calendar}Pick a time</p>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              ${list.length ? list.map(en => `<div class="time-option"><span class="dot"></span>${en.label}</div>`).join('') : `<p style="font-size:13px;color:var(--ink-faint);font-style:italic;">No times proposed yet.</p>`}
+            </div>
+          </div>
+        </div>
+        <div class="modal-foot"><p>This is a preview — participants will see this once the poll is created.</p></div>
+      </div>
+    `);
+    card.querySelector('#modalClose').onclick = () => { state.showPreview = false; renderAll(); };
+    backdrop.appendChild(card);
+    root.appendChild(backdrop);
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(showToast._h);
+    showToast._h = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  document.getElementById('previewBtn').onclick = () => { state.showPreview = true; renderAll(); };
+  document.getElementById('createBtn').onclick = () => showToast('Poll created — link copied to clipboard');
+
+  renderGridDaysHeader();
+  renderAll();
+</script>
+</body></html>
